@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f7f4ec;
+  --foreground: #141414;
+
+  /* 컬러 팔레트 단일 정의 — 헤드라인 호버/카드 호버 그라디언트와 커스텀 커서가 공유한다.
+     한쪽만 바뀌어 색이 어긋나는 걸 막으려고 여기서만 값을 갖는다. */
+  --hl-c1: #5a9be6;
+  --hl-c2: #8c9ee8;
+  --hl-c3: #a692ee;
+  --hl-c4: #c988d4;
+  --hl-c5: #e08ba9;
+  --hl-c6: #f2997e;
+
+  /* 히어로의 단일 크기 기준 = 헤드라인 글자 크기.
+     헤드라인 폭(14ch)이 검색 입력창 · 카테고리 버튼 행의 폭을 정하고,
+     버튼 글자 크기도 이 값에서 파생되므로 뷰포트가 바뀌어도 세 요소의 비율이 고정된다. */
+  --hero-fs: clamp(1.26rem, 4.284vw, 3.15rem);
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* 커스텀 커서(CustomCursor)를 쓰는 환경에서만 기본 커서를 숨긴다.
+   자식 요소가 cursor-pointer / cursor-grab을 직접 지정하므로 * 로 함께 덮어야 한다.
+   터치 기기는 이 미디어 쿼리에 걸리지 않아 원래 동작을 유지한다. */
+@media (hover: hover) and (pointer: fine) {
+  body,
+  body * {
+    cursor: none !important;
+  }
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* 헤드라인: 좌 → 우로 흐르는 블루 → 퍼플 → 코랄 그라디언트 */
+@keyframes headline-gradient {
+  from {
+    background-position: 200% 50%;
+  }
+  to {
+    background-position: 0% 50%;
+  }
+}
+
+/* ── 헤드라인 2레이어 구조 ──
+   그라디언트는 transition이 안 되므로 색을 "바꾸는" 대신 레이어를 겹친다:
+     아래(h1)      = 그레이 그라디언트 — 항상 보인다
+     위(span)      = 컬러 그라디언트 — opacity와 mask로 보이는 범위를 조절한다
+   둘은 글자·폭·줄바꿈이 완전히 같고 같은 keyframes로 흐르므로 위상도 어긋나지 않는다.
+
+   상태별 결과 (Headline.tsx):
+     1) 기본                    → 위 레이어 opacity 0        → 전체 그레이
+     2) 헤드라인 직접 호버       → opacity 1 + 포인터 위치 mask → 포인터 주변만 컬러
+     3) 카드 이미지 호버         → opacity 1 + mask 해제        → 전체 컬러 (+ blur · 1.5배)  */
+.headline-layer {
+  /* 배경 폭 = 요소의 2배. 200% → 0% 이동이 정확히 한 주기라 이음매 없이 반복된다. */
+  background-size: 200% 100%;
+  background-repeat: repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  /* 주기는 래퍼에서 상속받는다 — .headline-fast가 이 값만 덮어써 두 레이어를 함께 가속한다. */
+  animation: headline-gradient var(--headline-gradient-duration, 10s) linear infinite;
+}
+
+/* 기본 톤: 명도 40% → 10% → 40% 그레이.
+   가운데(50%)를 가장 어둡게 두고 좌우 대칭으로 배치해야 타일 경계에서 색이 튀지 않는다
+   (첫 색과 끝 색이 같아야 이음매 없이 반복된다 — 아래 컬러 레이어도 같은 구조). */
+.headline-layer--gray {
+  background-image: linear-gradient(
+    90deg,
+    #666666 0%,
+    #474747 16.67%,
+    #292929 33.33%,
+    #1a1a1a 50%,
+    #292929 66.67%,
+    #474747 83.33%,
+    #666666 100%
+  );
+}
+
+.headline-layer--color {
+  /* 포인터 주변 컬러 원의 반지름 — 알파벳 약 4~5개 폭 (기존 1.65배에서 1.5배 확대).
+     헤드라인 글자 크기에서 파생되므로 뷰포트가 바뀌어도 비율이 유지된다
+     (50.4px 기준 약 125px, 이전 83px). */
+  --spot-r: calc(var(--hero-fs) * 2.475);
+
+  background-image: linear-gradient(
+    90deg,
+    var(--hl-c1) 0%,
+    var(--hl-c2) 16.67%,
+    var(--hl-c3) 33.33%,
+    var(--hl-c4) 50%,
+    var(--hl-c5) 66.67%,
+    var(--hl-c6) 83.33%,
+    var(--hl-c1) 100%
+  );
+
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* 카드 이미지 호버 중 1.5배 가속 (10s ÷ 1.5). 래퍼에 붙이면 두 레이어가 함께 빨라진다. */
+.headline-fast {
+  --headline-gradient-duration: 6.667s;
+}
+
+/* 커스텀 커서(검은 점)가 카드 호버 중에 덮어쓰는 단색 레이어.
+   헤드라인과 같은 팔레트를 순서대로 지나가며 배경색 자체가 바뀐다.
+   구간이 linear로 보간되므로 색과 색 사이는 자동으로 크로스페이드되고,
+   마지막 스톱이 첫 색이라 이음매 없이 무한 반복된다.
+   검은 점 위에 이 레이어를 얹고 opacity를 0 ↔ 1로 전환한다 (CustomCursor 참고). */
+@keyframes cursor-cycle {
+  0% {
+    background-color: var(--hl-c1);
+  }
+  16.67% {
+    background-color: var(--hl-c2);
+  }
+  33.33% {
+    background-color: var(--hl-c3);
+  }
+  50% {
+    background-color: var(--hl-c4);
+  }
+  66.67% {
+    background-color: var(--hl-c5);
+  }
+  83.33% {
+    background-color: var(--hl-c6);
+  }
+  100% {
+    background-color: var(--hl-c1);
+  }
+}
+
+.cursor-cycle {
+  background-color: var(--hl-c1);
+  /* 6색 한 바퀴 8s — 색당 약 1.3s. 헤드라인(10s)과 비슷한 결이되 조금 더 경쾌하게. */
+  animation: cursor-cycle 8s linear infinite;
+}
+
+/* ── 카드 호버 전용: 속도만 1.5배 ──
+   색은 바로 위 규칙이 담당하고 여기서는 주기만 덮어쓴다 (10s ÷ 1.5 = 6.667s).
+   blur/opacity는 Hero의 Tailwind 클래스가, 속도는 이 변수가 맡아 서로 겹치는 속성이 없다.
+   호버가 풀리면 클래스가 빠지면서 10s로 복귀한다. */
+.headline-gradient--fast {
+  --headline-gradient-duration: 6.667s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headline-layer,
+  .cursor-cycle {
+    animation: none;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* 가로 드래그 영역에서 텍스트/이미지 선택 방지 */
+  .no-select {
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

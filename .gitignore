@@ -1,0 +1,58 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# 로컬 전용 도구 설정 (머신마다 다름)
+.claude/settings.local.json
+
+# 프로젝트 이미지 원본 — 서비스되지 않고 optimize 스크립트의 입력으로만 쓰인다.
+# 실제로 나가는 건 optimized/ 안의 JPG와 manifest.json뿐이라 그쪽만 커밋한다
+# (원본까지 넣으면 저장소가 12MB → 218MB가 되고, 배포할 때마다 안 쓰는 파일이 함께 올라간다).
+#
+# 주의: 원본은 저장소에 없다. 이미지를 다시 뽑으려면 원본이 있어야 하므로 따로 백업해 둘 것.
+/public/images/projects/**/*.png
+/public/images/projects/**/*.psd
+/public/images/projects/**/*.ai
+/public/images/projects/**/*.tif
+/public/images/projects/**/*.tiff
+/public/images/projects/**/*.webp
+# 결과물은 확장자와 무관하게 항상 포함한다
+!/public/images/projects/**/optimized/**
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+# .env, .env.local, .env.production 등 전부 제외한다 (API 키가 들어갈 수 있음).
+# 공유해야 하는 샘플은 .env.example 로 만들어 두면 커밋된다.
+.env
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
