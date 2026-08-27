@@ -1,5 +1,6 @@
 ﻿import type { GalleryImage, Project } from "@/lib/types";
 import dellPageManifest from "../../public/images/projects/5_Dell_BG_S/2_page/optimized/manifest.json";
+import dellColorPageManifest from "../../public/images/projects/4_Dell_BG_color/2_page/optimized/manifest.json";
 
 const SAMSUNG_DIR = "/images/projects/1_Samsung Browser";
 
@@ -64,6 +65,32 @@ const dellGallery: GalleryImage[] = ["2", "3", "4", "5", "6"].map((n) => ({
   ...dellPageManifest[`${n}.jpg` as keyof typeof dellPageManifest],
 }));
 
+const DELL_COLOR_DIR = "/images/projects/4_Dell_BG_color";
+
+/**
+ * DELL 2026 — 구성 규칙은 위 두 프로젝트와 같다. `hero`가 대표 이미지 / 히어로이고 나머지가 순환·본문.
+ *
+ * 원본 PNG는 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  900x1200(3:4) q95 — 카드 최대 408px(레티나 816px)보다 크므로 축소 없이 그대로
+ *   2_page       q92 — 본문은 1920px 폭, 파노라마 2장(hero·1)만 원본 폭 그대로
+ *
+ * 파노라마만 줄이지 않은 건 그 둘이 화면 폭을 꽉 채워 그려지기 때문이다 (히어로는 100vw,
+ * 본문 파노라마는 컨테이너 전체 폭). 1920px으로 맞추면 레티나에서 눈에 띄게 흐려진다.
+ *
+ * 본문 이미지는 크기를 함께 넘긴다. 3.56:1인 1.jpg를 ProjectGallery가 파노라마로 가려내
+ * 좌우가 잘리지 않는 전용 블록에 배치한다. 값은 manifest.json에서 오므로 이미지를 다시
+ * 뽑으면 자동으로 따라 바뀐다 — 여기에 숫자를 직접 적지 말 것.
+ */
+const dellColorFrames = ["hero", "1", "2", "3", "4"].map(
+  (n) => `${DELL_COLOR_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page에는 6번이 없어 번호가 1~5, 7로 이어진다 — 범위로 만들지 않고 그대로 적는다 */
+const dellColorGallery: GalleryImage[] = ["1", "2", "3", "4", "5", "7"].map((n) => ({
+  src: `${DELL_COLOR_DIR}/2_page/optimized/${n}.jpg`,
+  ...dellColorPageManifest[`${n}.jpg` as keyof typeof dellColorPageManifest],
+}));
+
 const NAVER_DIR = "/images/projects/3_Naver_Fall series ICON";
 
 /**
@@ -111,6 +138,16 @@ export const projects: Project[] = [
     // hero / gallery 없음 — 2_page가 준비되기 전까지 상세 페이지는 썸네일로 자리만 잡는다
     category: ["UI", "3D"],
     href: "/work/naver-fall-series-icon",  },
+  {
+    id: "dell-2026-bg",
+    title: "DELL 2026 BG",
+    description: TODO_DESCRIPTION,
+    thumbnail: dellColorFrames[0],
+    thumbnails: dellColorFrames,
+    hero: `${DELL_COLOR_DIR}/2_page/optimized/hero.jpg`,
+    gallery: dellColorGallery,
+    category: ["ARTWORKS", "3D"],
+    href: "/work/dell-2026-bg",  },
   {
     id: "dell-s-bg",
     title: "DELL S series BG",
