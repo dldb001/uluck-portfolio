@@ -14,9 +14,26 @@ const poppins = Poppins({
   display: "swap",
 });
 
+const SITE_TITLE = "LEE YU SEOK";
+const SITE_DESCRIPTION =
+  "Selected works — UI, motion graphics, 3D, 2D, artworks, media art.";
+
 export const metadata: Metadata = {
-  title: "Portfolio",
-  description: "Selected works — UI, motion graphics, 3D, 2D, artworks, media art.",
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  // 카카오톡 등 메신저의 미리보기 카드는 <title>보다 og 태그를 우선 참조한다
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    siteName: SITE_TITLE,
+    type: "website",
+    locale: "ko_KR",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
