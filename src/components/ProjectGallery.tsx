@@ -156,6 +156,116 @@ function TrioGallery({ images }: { images: GalleryImage[] }) {
   );
 }
 
+/** 원본 비율을 지키는 배치에서 한 장이 차지할 수 있는 최대 높이 */
+/**
+ * 이 비율(가로 ÷ 세로) 이상이면 짝을 짓지 않고 한 행을 통째로 쓴다.
+ *
+ * 세로 이미지는 두 장을 나란히 놓아야 화면이 낭비되지 않지만, 가로로 긴 이미지는 반 칸에
+ * 넣으면 아주 작아진다. 1.2를 경계로 둔 건 정사각에 가까운 이미지까지는 짝을 짓게 하기 위해서다.
+ */
+const NATURAL_SOLO_RATIO = 1.2;
+
+/**
+ * natural 배치의 이미지 한 장 — 틀 없이 자기 자리를 채운다.
+ *
+ * 높이 상한을 두지 않는 건 폭을 기준으로 삼기 위해서다. 상한이 걸리면 이미지가 칸보다
+ * 좁아지는데, 그러면 2열의 두 장 사이가 gap보다 벌어지고 단독 행도 2열 영역보다 좁아져
+ * 좌우 끝이 어긋난다. 폭을 항상 칸에 맞추면 창 높이와 무관하게 끝이 맞는다.
+ * 세로는 w-full + h-auto라 원본 비율대로 따라온다.
+ */
+function NaturalImage({ img, sizes }: { img: GalleryImage; sizes: string }) {
+  // 크기를 모르면 비율을 잡을 수 없다 — 16:9 상자 안에 contain으로 넣어 잘림만 막는다
+  if (!img.width || !img.height) {
+    return (
+      <div className="relative aspect-[16/9] w-full">
+        <Image
+          src={img.src}
+          alt=""
+          aria-hidden
+          fill
+          draggable={false}
+          sizes={sizes}
+          quality={90}
+          className="no-select rounded-[10px] object-contain"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={img.src}
+      // 히어로에서 이미 프로젝트를 설명했으므로 본문 이미지는 장식 취급
+      alt=""
+      aria-hidden
+      width={img.width}
+      height={img.height}
+      draggable={false}
+      sizes={sizes}
+      quality={90}
+      // w-full + h-auto: 폭은 칸을 꽉 채우고 높이는 비율이 정한다.
+      // 상자가 그림과 같은 비율이라 object-contain으로도 빈 띠가 생기지 않는다.
+      className="no-select h-auto w-full rounded-[10px] object-contain"
+    />
+  );
+}
+
+/**
+ * 원본 비율 그대로 놓는 배치.
+ *
+ * 다른 배치는 정해진 비율의 틀에 object-cover로 채워 넣기 때문에 틀과 비율이 다른 이미지는
+ * 가장자리가 잘린다. 여기서는 틀을 두지 않고 이미지 자체의 크기(manifest)로 자리를 잡아
+ * 어디도 잘리지 않게 한다.
+ *
+ * 세로 이미지는 두 장씩 짝을 지어 나란히 놓고, 가로로 긴 이미지(NATURAL_SOLO_RATIO 이상)는
+ * 한 행을 통째로 써서 크게 보여준다. 한 행의 두 장은 비율에 따라 폭이 서로 다를 수 있다 —
+ * 크기를 맞추려면 잘라야 하므로 여기서는 안 자르는 쪽을 택한다.
+ *
+ * 짝이 홀수로 남으면 마지막 한 장이 왼쪽 칸에 혼자 놓인다.
+ */
+function NaturalGallery({ images }: { images: GalleryImage[] }) {
+  const rows: { solo: boolean; images: GalleryImage[] }[] = [];
+
+  for (const img of images) {
+    const ratio = img.width && img.height ? img.width / img.height : 0;
+
+    if (ratio >= NATURAL_SOLO_RATIO) {
+      rows.push({ solo: true, images: [img] });
+      continue;
+    }
+
+    const open = rows[rows.length - 1];
+    // 직전 행이 아직 한 장짜리 짝 행이면 거기에 채운다
+    if (open && !open.solo && open.images.length < 2) open.images.push(img);
+    else rows.push({ solo: false, images: [img] });
+  }
+
+  return (
+    <div className="flex flex-col gap-[4vh]">
+      {rows.map((row, i) =>
+        row.solo ? (
+          <NaturalImage
+            key={i}
+            img={row.images[0]}
+            // 본문 컨테이너 폭과 같은 식 (Frame과 동일)
+            sizes="(max-width: 768px) 100vw, calc((100vw + 72rem)/2)"
+          />
+        ) : (
+          <div key={i} className="grid grid-cols-2 items-center gap-2 md:gap-3">
+            {row.images.map((img, j) => (
+              <NaturalImage
+                key={j}
+                img={img}
+                    sizes="(max-width: 768px) 50vw, 45vw"
+              />
+            ))}
+          </div>
+        ),
+      )}
+    </div>
+  );
+}
+
 export default function ProjectGallery({
   images,
   layout = "rhythm",
@@ -164,6 +274,7 @@ export default function ProjectGallery({
   layout?: GalleryLayout;
 }) {
   if (layout === "trio") return <TrioGallery images={images} />;
+  if (layout === "natural") return <NaturalGallery images={images} />;
 
   const blocks = toBlocks(images);
   const gap = "gap-4 md:gap-6";

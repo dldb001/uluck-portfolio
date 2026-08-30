@@ -28,8 +28,11 @@ export interface GalleryImage {
  * - rhythm(기본): 풀와이드 · 2열 · 비대칭 · 3열을 돌려 쓰며 강약을 준다 (ProjectGallery 참고)
  * - trio: 3장씩 한 세트로 같은 크기로만 배치한다. 한 프로젝트의 본문이 전부 같은 비율이고
  *   장수가 많을 때, 리듬을 주는 대신 규칙적으로 늘어놓는 편이 나은 경우에 쓴다.
+ * - natural: 원본 비율 그대로 한 장씩 세로로 쌓는다. 위 둘은 정해진 틀에 object-cover로
+ *   채워 넣어 가장자리가 잘리는데, 잘리면 안 되는 이미지(세로·정사각이 섞였거나 화면 전체가
+ *   내용인 경우)를 위한 배치다.
  */
-export type GalleryLayout = "rhythm" | "trio";
+export type GalleryLayout = "rhythm" | "trio" | "natural";
 
 export interface Project {
   id: string;
