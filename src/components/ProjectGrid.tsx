@@ -39,8 +39,30 @@ const HOVER_TOLERANCE = 24;
 const HOVER_CLEAR_DELAY = 120;
 
 /**
+ * deltaMode가 픽셀이 아닐 때 한 단위를 몇 px로 볼지.
+ * 브라우저는 보통 픽셀(0)로 주지만, Firefox의 일부 설정은 줄 단위(1)로 준다.
+ */
+const WHEEL_LINE_PX = 16;
+
+/**
+ * 휠 목표를 쫓아가는 지수 감쇠의 시간 상수(ms) — 남은 거리가 이 시간마다 1/e로 줄어든다.
+ *
+ * 휠 한 번마다 새 애니메이션을 시작하면 그때마다 속도가 0에서 다시 시작해 뚝뚝 끊긴다.
+ * 그래서 애니메이션을 다시 만들지 않고, 한 번 돈 루프가 "지금 목표"를 계속 쫓게 둔다.
+ * 연속으로 굴리면 목표만 앞으로 밀려나므로 트랙은 멈추는 구간 없이 이어서 흐른다.
+ *
+ * 값은 페이지 쪽 Lenis의 기본 감각(lerp 0.1 @60fps ≈ 158ms)에 맞췄다. 키우면 더 길게
+ * 미끄러지고(관성이 세지고), 줄이면 손에 더 딱 붙는다.
+ */
+const WHEEL_TAU = 160;
+
+/** 목표에 이만큼(px) 안으로 들어오면 딱 맞추고 루프를 끝낸다 */
+const WHEEL_EPSILON = 0.5;
+
+/**
  * 가로로 길게 배치된 카드들 — 화면 밖으로 넘쳐 잘려서 시작/끝난다.
  * - 마우스로 잡고 좌우 드래그하면 횡스크롤 (drag="x" + dragConstraints)
+ * - 휠을 굴려도 같은 방향으로 움직인다 (아래 = 다음 카드) — 경계·관성은 드래그와 공유
  * - 필터링 시 layout + AnimatePresence로 부드럽게 재배열
  */
 export default function ProjectGrid({ projects, hoveredId = null, onCardHoverChange }: Props) {
@@ -60,6 +82,56 @@ export default function ProjectGrid({ projects, hoveredId = null, onCardHoverCha
   const clearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [maxDrag, setMaxDrag] = useState(0);
+
+  /**
+   * 휠이 겨냥하고 있는 목표 x. 트랙의 현재 x와 따로 두는 이유는,
+   * 트랙이 아직 따라오는 중에 휠이 또 들어와도 이미 예약된 거리에 이어서 더할 수 있어야
+   * 연속으로 굴릴 때 이동량이 깎이지 않기 때문이다.
+   */
+  const wheelTarget = useRef(0);
+  /** 돌고 있는 rAF 핸들 (0이면 멈춤). 새 휠은 이걸 다시 만들지 않고 목표만 바꾼다 */
+  const wheelRaf = useRef(0);
+  /** 직전 프레임 시각 — 프레임 간격만큼만 감쇠시키기 위해 들고 있는다 */
+  const wheelLast = useRef(0);
+
+  const stopWheelLoop = useCallback(() => {
+    if (!wheelRaf.current) return;
+    cancelAnimationFrame(wheelRaf.current);
+    wheelRaf.current = 0;
+  }, []);
+
+  /**
+   * 목표를 향해 트랙을 끌어당기는 단 하나의 루프.
+   *
+   * 이미 돌고 있으면 아무것도 하지 않는다 — 그게 핵심이다. 휠이 새로 들어와도 루프는
+   * 그대로 두고 목표만 갱신하므로, 진행 중이던 속도가 유지된 채 새 목표로 자연스럽게 휜다.
+   */
+  const runWheelLoop = useCallback(() => {
+    if (wheelRaf.current) return;
+
+    wheelLast.current = performance.now();
+    const step = (now: number) => {
+      // 탭을 다녀오는 등으로 프레임이 크게 벌어졌을 때 한 번에 튀지 않도록 상한을 둔다
+      const dt = Math.min(now - wheelLast.current, 64);
+      wheelLast.current = now;
+
+      const current = x.get();
+      const diff = wheelTarget.current - current;
+
+      if (Math.abs(diff) <= WHEEL_EPSILON) {
+        x.set(wheelTarget.current);
+        wheelRaf.current = 0;
+        return;
+      }
+
+      // dt 기반 지수 감쇠 — 60Hz든 120Hz든 같은 시간에 같은 거리를 준다.
+      // (프레임마다 고정 비율로 lerp하면 주사율이 높은 화면에서 더 빨리 붙어 감각이 달라진다)
+      x.set(current + diff * (1 - Math.exp(-dt / WHEEL_TAU)));
+      wheelRaf.current = requestAnimationFrame(step);
+    };
+
+    wheelRaf.current = requestAnimationFrame(step);
+  }, [x]);
 
   const cancelClear = useCallback(() => {
     if (clearTimer.current === null) return;
@@ -154,6 +226,8 @@ export default function ProjectGrid({ projects, hoveredId = null, onCardHoverCha
 
     // 필터로 카드가 줄어 트랙이 짧아지면, 밀려 있던 위치를 되돌린다.
     if (x.get() < -next) x.set(-next);
+    // 휠 목표도 같은 범위로 접어 둔다 — 안 그러면 다음 휠이 사라진 영역에서 이어진다
+    if (wheelTarget.current < -next) wheelTarget.current = -next;
   }, [x]);
 
   useLayoutEffect(() => {
@@ -171,7 +245,59 @@ export default function ProjectGrid({ projects, hoveredId = null, onCardHoverCha
     return () => observer.disconnect();
   }, [measure]);
 
+  /**
+   * 세로 휠을 트랙의 가로 이동으로 바꾼다 (휠 아래 = 다음 카드 방향).
+   *
+   * React의 onWheel은 루트에 passive로 붙어 preventDefault가 먹지 않으므로 네이티브로 건다.
+   * 페이지 쪽 스무스 스크롤(Lenis)은 window에서 휠을 받으므로 stopPropagation으로 끊고,
+   * 뷰포트의 data-lenis-prevent로 한 번 더 막는다.
+   *
+   * 경계에 닿아 더 갈 곳이 없으면 preventDefault를 하지 않고 그대로 흘려보낸다.
+   * 그래야 트랙 끝에서 페이지가 다시 세로로 움직인다 — 막아 두면 커서가 그리드 위에 있는 한
+   * 페이지가 아예 스크롤되지 않는다.
+   */
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const onWheel = (e: WheelEvent) => {
+      // 넘칠 게 없으면 가로로 옮길 것도 없다 — 페이지에 그대로 넘긴다
+      if (maxDrag <= 0) return;
+
+      const unit =
+        e.deltaMode === 1 ? WHEEL_LINE_PX : e.deltaMode === 2 ? viewport.clientWidth : 1;
+      // 트랙패드 가로 스와이프(deltaX)도 같이 받는다 — 둘 중 크게 움직인 축을 쓴다
+      const raw = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      const delta = raw * unit;
+      if (delta === 0) return;
+
+      // 루프가 도는 중이면 예약된 목표에, 아니면 지금 위치에 이어서 더한다
+      const from = wheelRaf.current ? wheelTarget.current : x.get();
+      // 드래그와 같은 경계 — 맨 앞(0)과 맨 뒤(-maxDrag) 밖으로는 나가지 않는다
+      const next = Math.min(0, Math.max(-maxDrag, from - delta));
+      if (next === from) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      // 드래그 관성이나 포커스 이동이 x를 물고 있으면 넘겨받는다 —
+      // 우리 루프는 x.set()으로 직접 쓰므로, 남아 있는 애니메이션과 매 프레임 부딪힌다.
+      if (!wheelRaf.current) x.stop();
+
+      wheelTarget.current = next;
+      runWheelLoop();
+    };
+
+    viewport.addEventListener("wheel", onWheel, { passive: false });
+    return () => viewport.removeEventListener("wheel", onWheel);
+    // projects까지 보는 건 목록이 0건이었다 돌아올 때 뷰포트가 새로 생기기 때문이다
+  }, [maxDrag, x, projects, runWheelLoop]);
+
+  useEffect(() => stopWheelLoop, [stopWheelLoop]);
+
   const handlePointerDown = (e: React.PointerEvent) => {
+    // 손으로 잡는 순간 휠 관성은 넘겨준다 — 둘이 같은 x를 두고 다투지 않도록
+    stopWheelLoop();
     pointerStart.current = { x: e.clientX, y: e.clientY };
     draggedRef.current = false;
   };
@@ -198,7 +324,9 @@ export default function ProjectGrid({ projects, hoveredId = null, onCardHoverCha
     else if (card.right > view.right - margin) delta = view.right - margin - card.right;
     if (delta === 0) return;
 
+    stopWheelLoop();
     const next = Math.min(0, Math.max(-maxDrag, x.get() + delta));
+    wheelTarget.current = next;
     animate(x, next, { type: "spring", stiffness: 260, damping: 34 });
   };
 
@@ -231,6 +359,8 @@ export default function ProjectGrid({ projects, hoveredId = null, onCardHoverCha
           ref={viewportRef}
           // hover 판정은 카드가 아니라 여기서 한 번만 받는다 (트랙 위 이벤트도 여기로 올라온다)
           onPointerMove={handleHoverMove}
+          // Lenis가 이 안에서 일어난 휠을 페이지 스크롤로 쓰지 않게 한다 (위 onWheel 참고)
+          data-lenis-prevent
           className="flex h-full w-full items-center overflow-hidden [container-type:size]"
         >
           <LayoutGroup>
