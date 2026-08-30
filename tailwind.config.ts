@@ -11,7 +11,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        cream: "#F7F4EC",
+        // 배경값은 globals.css의 --background 한 곳에서 온다
+        surface: "rgb(var(--background) / <alpha-value>)",
         ink: "#141414",
         muted: "#8A8781",
       },

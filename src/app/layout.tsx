@@ -43,7 +43,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={poppins.variable}>
-      <body className="bg-cream font-sans text-ink antialiased">
+      <body className="font-sans text-ink antialiased">
         <SmoothScroll />
         {/* 커서와 페이지가 같은 카드 호버 상태를 보도록 둘 다 provider 안에 둔다 */}
         <CardHoverProvider>

@@ -3,7 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --background: #f7f4ec;
+  /* 사이트 배경 — 값은 여기 한 곳에만 둔다.
+     body와 Tailwind의 surface 토큰이 모두 이걸 참조하므로 한 줄만 고치면 전부 따라온다.
+     bg-surface/50 같은 투명도 문법을 쓰려면 hex가 아니라 "R G B" 채널이어야 한다. */
+  --background: 242 242 242; /* #F2F2F2 — HSL lightness 95% */
   --foreground: #141414;
 
   /* 컬러 팔레트 단일 정의 — 헤드라인 호버/카드 호버 그라디언트와 커스텀 커서가 공유한다.
@@ -27,7 +30,7 @@ html {
 }
 
 body {
-  background-color: var(--background);
+  background-color: rgb(var(--background));
   color: var(--foreground);
 }
 

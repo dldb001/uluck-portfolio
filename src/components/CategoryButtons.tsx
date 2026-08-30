@@ -45,7 +45,7 @@ export default function CategoryButtons({ categories, active, onSelect }: Props)
               `flex-auto whitespace-nowrap transition-colors duration-200 ${PILL} ${PILL_PX}`,
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
               isActive
-                ? "border-ink bg-ink text-cream"
+                ? "border-ink bg-ink text-surface"
                 : "border-ink/20 bg-transparent text-ink/70 hover:border-ink/50 hover:text-ink",
             ].join(" ")}
           >

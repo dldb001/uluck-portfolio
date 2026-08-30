@@ -167,7 +167,7 @@ export default function ProjectCard({
             이미지에 가려 아예 보이지 않는다. */}
         <span
           aria-hidden
-          className={`${PILL} ${PILL_PX} ${PILL_TEXT} pointer-events-none absolute bottom-3 left-3 z-10 border-ink/20 bg-cream/50 text-ink transition-opacity duration-300 ease-out md:bottom-4 md:left-4 ${
+          className={`${PILL} ${PILL_PX} ${PILL_TEXT} pointer-events-none absolute bottom-3 left-3 z-10 border-ink/20 bg-surface/50 text-ink transition-opacity duration-300 ease-out md:bottom-4 md:left-4 ${
             isHovered ? "opacity-100" : "opacity-0"
           }`}
         >
