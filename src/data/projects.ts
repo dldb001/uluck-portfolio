@@ -6,6 +6,7 @@ import gardenPageManifest from "../../public/images/projects/8_Lucky Garden/2_pa
 import lottePageManifest from "../../public/images/projects/9_LOTTE Dept. Nowon VP Film/2_page/optimized/manifest.json";
 import lgPageManifest from "../../public/images/projects/10_LG Brand Expressions/2_page/optimized/manifest.json";
 import xmasPageManifest from "../../public/images/projects/11_Lucky Christmas Lounge/2_page/optimized/manifest.json";
+import ibkPageManifest from "../../public/images/projects/12_IBK memorial hall/2_page/optimized/manifest.json";
 
 const SAMSUNG_DIR = "/images/projects/1_Samsung Browser";
 
@@ -289,6 +290,31 @@ const xmasGallery: GalleryImage[] = Array.from({ length: 5 }, (_, i) => `${i + 1
   ...xmasPageManifest[`${n}.jpg` as keyof typeof xmasPageManifest],
 }));
 
+const IBK_DIR = "/images/projects/12_IBK memorial hall";
+
+/**
+ * IBK memorial hall — `hero`가 카드 대표 이미지 / 상세 히어로이고 나머지가 순환·본문이다.
+ *
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
+ *   2_page       q92 — 히어로만 원본 폭 3360, 본문은 최대 1920px
+ *
+ * 본문 1~9는 원본이 1344x1728(0.78:1 세로)이라 1920 상한에 걸리지 않고 그대로 나온다.
+ * 세로와 가로가 섞인 유일한 프로젝트라 galleryLayout을 "natural"로 두었다 — 기본 배치의
+ * 가로 틀에 넣으면 세로 이미지의 위아래가 잘린다.
+ *
+ * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
+ */
+const ibkFrames = ["hero", "1", "2", "3", "4"].map(
+  (n) => `${IBK_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~10이 본문이다 */
+const ibkGallery: GalleryImage[] = Array.from({ length: 10 }, (_, i) => `${i + 1}`).map((n) => ({
+  src: `${IBK_DIR}/2_page/optimized/${n}.jpg`,
+  ...ibkPageManifest[`${n}.jpg` as keyof typeof ibkPageManifest],
+}));
+
 /**
  * TODO: 프로젝트별 실제 소개 문단으로 교체.
  * 지금은 12개가 같은 문구를 참조하지만 필드는 각자 갖고 있어 하나씩 바꿔 나가면 된다.
@@ -357,7 +383,7 @@ export const projects: Project[] = [
     thumbnails: luckyFrames,
     hero: `${LUCKY_DIR}/2_page/optimized/hero.jpg`,
     gallery: luckyGallery,
-    category: ["3D", "MOTIONGRAPHIC", "ARTWORKS"],
+    category: ["3D", "MOTIONGRAPHIC"],
     href: "/work/lucky-spectrum",  },
   {
     id: "lucky-garden",
@@ -367,7 +393,7 @@ export const projects: Project[] = [
     thumbnails: gardenFrames,
     hero: `${GARDEN_DIR}/2_page/optimized/hero.jpg`,
     gallery: gardenGallery,
-    category: ["3D", "MOTIONGRAPHIC", "ARTWORKS"],
+    category: ["3D", "MOTIONGRAPHIC"],
     href: "/work/lucky-garden",  },
   {
     id: "lucky-christmas-lounge",
@@ -377,7 +403,7 @@ export const projects: Project[] = [
     thumbnails: xmasFrames,
     hero: `${XMAS_DIR}/2_page/optimized/hero.jpg`,
     gallery: xmasGallery,
-    category: ["3D", "MOTIONGRAPHIC", "ARTWORKS"],
+    category: ["3D", "MOTIONGRAPHIC"],
     href: "/work/lucky-christmas-lounge",  },
   {
     id: "dell-s-bg",
@@ -411,6 +437,18 @@ export const projects: Project[] = [
     galleryLayout: "trio",
     category: ["3D", "MOTIONGRAPHIC"],
     href: "/work/lg-brand-expressions",  },
+  {
+    id: "ibk-memorial-hall",
+    title: "IBK memorial hall",
+    description: TODO_DESCRIPTION,
+    thumbnail: ibkFrames[0],
+    thumbnails: ibkFrames,
+    hero: `${IBK_DIR}/2_page/optimized/hero.jpg`,
+    gallery: ibkGallery,
+    // 본문에 세로(0.78:1)와 가로가 섞여 있어 정해진 틀에 넣으면 잘린다 — 원본 비율 그대로 쌓는다
+    galleryLayout: "natural",
+    category: ["3D", "MOTIONGRAPHIC"],
+    href: "/work/ibk-memorial-hall",  },
   {
     id: "volume-study",
     title: "Volume Study",
