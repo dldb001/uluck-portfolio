@@ -22,6 +22,15 @@ export interface GalleryImage {
   height?: number;
 }
 
+/**
+ * 상세 페이지 본문 그리드를 어떤 방식으로 배치할지.
+ *
+ * - rhythm(기본): 풀와이드 · 2열 · 비대칭 · 3열을 돌려 쓰며 강약을 준다 (ProjectGallery 참고)
+ * - trio: 3장씩 한 세트로 같은 크기로만 배치한다. 한 프로젝트의 본문이 전부 같은 비율이고
+ *   장수가 많을 때, 리듬을 주는 대신 규칙적으로 늘어놓는 편이 나은 경우에 쓴다.
+ */
+export type GalleryLayout = "rhythm" | "trio";
+
 export interface Project {
   id: string;
   title: string;
@@ -38,6 +47,8 @@ export interface Project {
   hero?: string;
   /** 상세 페이지 본문 이미지 그리드 (없으면 thumbnail을 반복해 레이아웃만 잡는다) */
   gallery?: GalleryImage[];
+  /** 본문 그리드 배치 방식 (없으면 "rhythm") */
+  galleryLayout?: GalleryLayout;
   /** 여러 카테고리 중복 태깅 가능 */
   category: Category[];
   /** 상세 페이지 경로 (/work/[id]) */

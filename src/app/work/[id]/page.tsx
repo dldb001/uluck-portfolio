@@ -114,7 +114,7 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
 
       {/* 4. 이미지 그리드 — 블록 크기를 섞어 강약을 준다 (ProjectGallery 참고) */}
       <section className={`mx-auto ${CONTENT_W} px-3 pb-[10vh]`}>
-        <ProjectGallery images={gallery} />
+        <ProjectGallery images={gallery} layout={project.galleryLayout} />
       </section>
 
       {/*

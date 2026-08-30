@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import type { GalleryImage } from "@/lib/types";
+import type { GalleryImage, GalleryLayout } from "@/lib/types";
 
 /**
  * 상세 페이지 본문 이미지 그리드.
@@ -116,7 +116,55 @@ function Frame({
   );
 }
 
-export default function ProjectGallery({ images }: { images: GalleryImage[] }) {
+/** trio 레이아웃에서 한 세트에 들어가는 장수 */
+const TRIO_COLUMNS = 3;
+
+/**
+ * 3장씩 같은 크기로만 늘어놓는 배치.
+ *
+ * 기본(rhythm) 배치는 블록 크기를 섞어 강약을 주지만, 본문이 전부 같은 비율이고 장수가 많으면
+ * 그 강약이 오히려 산만해진다. 그럴 때 이 배치를 쓴다.
+ *
+ * 마지막 세트가 3장 미만이면 남는 장수만큼만 놓는다 — grid-cols-3라 칸 폭은 그대로 유지되고
+ * 왼쪽부터 채워진다 (2장이면 오른쪽 한 칸이 빈다).
+ */
+function TrioGallery({ images }: { images: GalleryImage[] }) {
+  // 모든 칸이 같은 크기여야 하므로 비율은 하나로 고정한다. 첫 장의 실제 비율을 그대로 쓰면
+  // (본문이 같은 비율일 때) 어디도 잘리지 않는다. 크기를 모르면 기본 3열 블록과 같은 3:4.
+  const sized = images.find((img) => img.width && img.height);
+  const aspectRatio = sized ? `${sized.width} / ${sized.height}` : "3 / 4";
+
+  const sets: GalleryImage[][] = [];
+  for (let i = 0; i < images.length; i += TRIO_COLUMNS) {
+    sets.push(images.slice(i, i + TRIO_COLUMNS));
+  }
+
+  return (
+    <div>
+      {sets.map((set, i) => (
+        <div
+          key={i}
+          // 세트 사이 여백은 기본 배치의 3열 블록과 같은 값을 쓴다 (마지막 세트 뒤에는 두지 않는다)
+          className={`grid grid-cols-3 gap-3 md:gap-4 ${i === sets.length - 1 ? "" : SPACING.trio}`}
+        >
+          {set.map((img, j) => (
+            <Frame key={j} img={img} className="w-full" style={{ aspectRatio }} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function ProjectGallery({
+  images,
+  layout = "rhythm",
+}: {
+  images: GalleryImage[];
+  layout?: GalleryLayout;
+}) {
+  if (layout === "trio") return <TrioGallery images={images} />;
+
   const blocks = toBlocks(images);
   const gap = "gap-4 md:gap-6";
 
