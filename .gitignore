@@ -30,6 +30,8 @@ Thumbs.db
 #
 # 주의: 원본은 저장소에 없다. 이미지를 다시 뽑으려면 원본이 있어야 하므로 따로 백업해 둘 것.
 /public/images/projects/**/*.png
+/public/images/projects/**/*.jpg
+/public/images/projects/**/*.jpeg
 /public/images/projects/**/*.psd
 /public/images/projects/**/*.ai
 /public/images/projects/**/*.tif

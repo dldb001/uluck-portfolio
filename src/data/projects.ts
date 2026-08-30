@@ -1,6 +1,8 @@
 ﻿import type { GalleryImage, Project } from "@/lib/types";
 import dellPageManifest from "../../public/images/projects/5_Dell_BG_S/2_page/optimized/manifest.json";
 import dellColorPageManifest from "../../public/images/projects/4_Dell_BG_color/2_page/optimized/manifest.json";
+import luckyPageManifest from "../../public/images/projects/7_Lucky Spectrum/2_page/optimized/manifest.json";
+import gardenPageManifest from "../../public/images/projects/8_Lucky Garden/2_page/optimized/manifest.json";
 
 const SAMSUNG_DIR = "/images/projects/1_Samsung Browser";
 
@@ -106,6 +108,107 @@ const naverFrames = ["hero", "1", "2", "3"].map(
   (n) => `${NAVER_DIR}/1_thumbnail/optimized/${n}.jpg`,
 );
 
+const GALAXY_WATCH_DIR = "/images/projects/2_Galaxy watch ICON";
+
+/**
+ * Galaxy Watch ICON — NAVER · Samsung ST와 같은 상태다. 썸네일만 있고 2_page가 아직 없어
+ * hero / gallery 필드를 두지 않는다. 상세 페이지가 hero는 thumbnail로 대체하고 gallery는
+ * thumbnail 반복으로 자리만 잡아 주므로(work/[id]/page.tsx 참고) 임시 화면이 된다.
+ * 2_page가 준비되면 DELL처럼 optimized/ + manifest를 만들어 두 필드를 채우면 된다.
+ *
+ * 원본은 1_thumbnail/*.png이고 여기서 쓰는 건 optimized/ 쪽이다:
+ *   1~5     1875x2500(3:4) → 900x1200 q95
+ *   hero    원본이 이미 900x1200이라 크기 변화 없이 JPG로만 바뀐다
+ * 카드 최대 408px(레티나 816px)보다 크므로 축소 없이 그대로 쓴다.
+ *
+ * 폴더 루트의 hero.psd는 일러스트 원본이라 최적화 대상에서 빠진다(스크립트가 png/jpg 계열만 읽는다).
+ *
+ * 폴더명에 공백이 있지만 next/image가 src를 인코딩하므로 그대로 적는다.
+ */
+const galaxyWatchFrames = ["hero", "1", "2", "3", "4", "5"].map(
+  (n) => `${GALAXY_WATCH_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+const SAMSUNG_ST_DIR = "/images/projects/6_Samsung_ST";
+
+/**
+ * Samsung ST — NAVER와 같은 상태다. 썸네일만 있고 2_page가 아직 없어 hero / gallery 필드를 두지 않는다.
+ * 상세 페이지가 hero는 thumbnail로 대체하고 gallery는 thumbnail 반복으로 자리만 잡아 주므로
+ * (work/[id]/page.tsx 참고) 임시 화면이 된다. 2_page가 준비되면 DELL처럼 optimized/ + manifest를
+ * 만들어 두 필드를 채우면 된다.
+ *
+ * 원본은 1875x2500 PNG(정확히 3:4)이고 여기서 쓰는 건 optimized/ 쪽이다:
+ *   1_Thumbnail  900x1200(3:4) q95 — 카드 최대 408px(레티나 816px)보다 크므로 축소 없이 그대로
+ *
+ * 주의: 폴더명이 `1_Thumbnail`로, 다른 프로젝트의 `1_thumbnail`과 T의 대소문자가 다르다.
+ * Windows는 구분하지 않지만 배포되는 Linux는 구분하므로 폴더명을 바꾸면 여기도 같이 고쳐야 한다.
+ */
+const samsungStFrames = ["hero", "1", "2", "3", "4"].map(
+  (n) => `${SAMSUNG_ST_DIR}/1_Thumbnail/optimized/${n}.jpg`,
+);
+
+const LUCKY_DIR = "/images/projects/7_Lucky Spectrum";
+
+/**
+ * Lucky Spectrum — 썸네일과 2_page가 모두 있어 DELL과 같은 구성이다.
+ * `hero`가 카드 대표 이미지 / 상세 히어로이고 나머지가 순환·본문이다.
+ *
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
+ *                (카드 최대 408px, 레티나 816px보다 크므로 축소 없이 그대로)
+ *   2_page       q92 — 본문은 1920px 폭, 파노라마 3장(hero·1·2)만 원본 폭 3840 그대로
+ *
+ * 파노라마만 줄이지 않은 건 DELL 2026과 같은 이유다. 히어로는 100vw, 본문 파노라마는
+ * 컨테이너 전체 폭으로 그려져 1920px으로 맞추면 레티나에서 눈에 띄게 흐려진다.
+ *
+ * 본문 이미지는 크기를 함께 넘긴다. 3.06:1인 1·2가 파노라마로 가려져 좌우가 잘리지 않는
+ * 전용 블록에 배치된다. 값은 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로
+ * 따라 바뀐다 — 여기에 숫자를 직접 적지 말 것.
+ *
+ * 폴더명에 공백이 있지만 next/image가 src를 인코딩하므로 그대로 적는다.
+ */
+const luckyFrames = ["hero", "1", "2", "3", "4"].map(
+  (n) => `${LUCKY_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~6이 본문이다 */
+const luckyGallery: GalleryImage[] = ["1", "2", "3", "4", "5", "6"].map((n) => ({
+  src: `${LUCKY_DIR}/2_page/optimized/${n}.jpg`,
+  ...luckyPageManifest[`${n}.jpg` as keyof typeof luckyPageManifest],
+}));
+
+const GARDEN_DIR = "/images/projects/8_Lucky Garden";
+
+/**
+ * Lucky Garden — 썸네일과 2_page가 모두 있어 Lucky Spectrum과 같은 구성이다.
+ * `hero`가 카드 대표 이미지 / 상세 히어로이고 나머지가 순환·본문이다.
+ *
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_Thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
+ *   2_page       q92 — 16:9인 10~13만 1920px 폭, 파노라마(hero·1~9)는 최대 3840px
+ *
+ * 파노라마 폭을 3840에서 끊은 건 원본이 6244px까지 있어서다. 파노라마는 화면 폭을 꽉 채워
+ * 그려지지만 1920px 화면의 레티나도 3840px이면 충분하고, 그 위로는 파일만 무거워진다.
+ * (3·4·6이 6244 → 3840으로 줄고 나머지는 원본 그대로다)
+ *
+ * 본문 이미지는 크기를 함께 넘긴다. 3.05:1인 1~9가 파노라마로 가려져 좌우가 잘리지 않는
+ * 전용 블록에 배치된다. 값은 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로
+ * 따라 바뀐다 — 여기에 숫자를 직접 적지 말 것.
+ *
+ * 주의: 폴더명이 `1_Thumbnail`로, 다른 프로젝트의 `1_thumbnail`과 T의 대소문자가 다르다.
+ * Windows는 구분하지 않지만 배포되는 Linux는 구분하므로 폴더명을 바꾸면 여기도 같이 고쳐야 한다.
+ * (Samsung ST와 같은 경우다)
+ */
+const gardenFrames = ["hero", "1", "2", "3", "4"].map(
+  (n) => `${GARDEN_DIR}/1_Thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~13이 본문이다 */
+const gardenGallery: GalleryImage[] = Array.from({ length: 13 }, (_, i) => `${i + 1}`).map((n) => ({
+  src: `${GARDEN_DIR}/2_page/optimized/${n}.jpg`,
+  ...gardenPageManifest[`${n}.jpg` as keyof typeof gardenPageManifest],
+}));
+
 /**
  * TODO: 프로젝트별 실제 소개 문단으로 교체.
  * 지금은 12개가 같은 문구를 참조하지만 필드는 각자 갖고 있어 하나씩 바꿔 나가면 된다.
@@ -139,6 +242,24 @@ export const projects: Project[] = [
     category: ["UI", "3D"],
     href: "/work/naver-fall-series-icon",  },
   {
+    id: "samsung-st",
+    title: "Samsung ST",
+    description: TODO_DESCRIPTION,
+    thumbnail: samsungStFrames[0],
+    thumbnails: samsungStFrames,
+    // hero / gallery 없음 — 2_page가 준비되기 전까지 상세 페이지는 썸네일로 자리만 잡는다
+    category: ["UI", "3D"],
+    href: "/work/samsung-st",  },
+  {
+    id: "galaxy-watch-icon",
+    title: "Galaxy Watch ICON",
+    description: TODO_DESCRIPTION,
+    thumbnail: galaxyWatchFrames[0],
+    thumbnails: galaxyWatchFrames,
+    // hero / gallery 없음 — 2_page가 준비되기 전까지 상세 페이지는 썸네일로 자리만 잡는다
+    category: ["UI", "3D"],
+    href: "/work/galaxy-watch-icon",  },
+  {
     id: "dell-2026-bg",
     title: "DELL 2026 BG",
     description: TODO_DESCRIPTION,
@@ -148,6 +269,26 @@ export const projects: Project[] = [
     gallery: dellColorGallery,
     category: ["ARTWORKS", "3D"],
     href: "/work/dell-2026-bg",  },
+  {
+    id: "lucky-spectrum",
+    title: "Lucky Spectrum",
+    description: TODO_DESCRIPTION,
+    thumbnail: luckyFrames[0],
+    thumbnails: luckyFrames,
+    hero: `${LUCKY_DIR}/2_page/optimized/hero.jpg`,
+    gallery: luckyGallery,
+    category: ["3D", "MOTIONGRAPHIC", "ARTWORKS"],
+    href: "/work/lucky-spectrum",  },
+  {
+    id: "lucky-garden",
+    title: "Lucky Garden",
+    description: TODO_DESCRIPTION,
+    thumbnail: gardenFrames[0],
+    thumbnails: gardenFrames,
+    hero: `${GARDEN_DIR}/2_page/optimized/hero.jpg`,
+    gallery: gardenGallery,
+    category: ["3D", "MOTIONGRAPHIC", "ARTWORKS"],
+    href: "/work/lucky-garden",  },
   {
     id: "dell-s-bg",
     title: "DELL S series BG",
