@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useCardHover } from "@/components/CardHoverProvider";
 
 /** 원 지름(px) — 아래 음수 마진이 이 값의 절반이라 좌표에 정확히 중심이 맞는다 */
 const SIZE = 7;
 
-/** 지연을 거의 없앤 spring — 임계감쇠(2√(k·m) ≈ 28.3)보다 damping이 커서 튕김 없이 즉각 붙는다 */
-const FOLLOW = { stiffness: 1000, damping: 40, mass: 0.2 };
+/**
+ * 지연을 거의 없앤 spring.
+ *
+ * 임계감쇠는 2√(k·m) ≈ 37.9라, damping 32는 그보다 살짝 낮은 과소감쇠다. 오버슈트가
+ * 1px에도 못 미쳐 눈에는 튕김이 보이지 않으면서, 과감쇠였던 예전 값보다 훨씬 빨리 붙는다.
+ */
+const FOLLOW = { stiffness: 1800, damping: 32, mass: 0.2 };
 
 /** 카드 호버 시 확대/색 전환에 함께 쓰는 타이밍 */
 const MORPH = { duration: 0.28, ease: "easeOut" } as const;
@@ -31,18 +36,28 @@ export default function CustomCursor() {
 
   /** 창 밖으로 나가면 false — 점이 그 자리에 남지 않고 페이드아웃된다 */
   const [visible, setVisible] = useState(false);
+  /** 리스너 안에서 직전 상태를 읽어 전환 순간에만 setState 한다 (Headline과 같은 방식) */
+  const visibleRef = useRef(false);
 
   const { hoveredId } = useCardHover();
   const onCard = hoveredId !== null;
 
   useEffect(() => {
+    // 좌표는 motion value라 리렌더 없이 갱신된다. visible까지 매 프레임 set 하면
+    // 포인터가 움직이는 내내 이 컴포넌트가 다시 그려지므로, 값이 바뀔 때만 넘긴다.
+    const setShown = (next: boolean) => {
+      if (visibleRef.current === next) return;
+      visibleRef.current = next;
+      setVisible(next);
+    };
+
     const move = (e: PointerEvent) => {
       x.set(e.clientX);
       y.set(e.clientY);
-      setVisible(true);
+      setShown(true);
     };
-    const hide = () => setVisible(false);
-    const show = () => setVisible(true);
+    const hide = () => setShown(false);
+    const show = () => setShown(true);
 
     window.addEventListener("pointermove", move, { passive: true });
     // 창 경계를 벗어날 때 발생 — document에 걸어야 창 밖으로 나가는 경우가 잡힌다
