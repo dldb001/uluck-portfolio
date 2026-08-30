@@ -3,6 +3,9 @@ import dellPageManifest from "../../public/images/projects/5_Dell_BG_S/2_page/op
 import dellColorPageManifest from "../../public/images/projects/4_Dell_BG_color/2_page/optimized/manifest.json";
 import luckyPageManifest from "../../public/images/projects/7_Lucky Spectrum/2_page/optimized/manifest.json";
 import gardenPageManifest from "../../public/images/projects/8_Lucky Garden/2_page/optimized/manifest.json";
+import lottePageManifest from "../../public/images/projects/9_LOTTE Dept. Nowon VP Film/2_page/optimized/manifest.json";
+import lgPageManifest from "../../public/images/projects/10_LG Brand Expressions/2_page/optimized/manifest.json";
+import xmasPageManifest from "../../public/images/projects/11_Lucky Christmas Lounge/2_page/optimized/manifest.json";
 
 const SAMSUNG_DIR = "/images/projects/1_Samsung Browser";
 
@@ -209,6 +212,83 @@ const gardenGallery: GalleryImage[] = Array.from({ length: 13 }, (_, i) => `${i 
   ...gardenPageManifest[`${n}.jpg` as keyof typeof gardenPageManifest],
 }));
 
+const LOTTE_DIR = "/images/projects/9_LOTTE Dept. Nowon VP Film";
+
+/**
+ * LOTTE Dept. Nowon VP Film — 썸네일과 2_page가 모두 있다.
+ *
+ * 구성 규칙은 DELL·Lucky 쪽과 같다. `hero`가 카드 대표 이미지 / 상세 히어로이고
+ * 나머지가 순환·본문이다. 썸네일과 상세 히어로가 서로 다른 그림이다.
+ *
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
+ *   2_page       q92 — 본문(1~16)은 1920px 폭, 히어로만 원본 폭 3860 그대로
+ *
+ * 히어로만 줄이지 않은 건 3.63:1 파노라마가 100vw로 그려지기 때문이다. 본문 쪽은
+ * 1.25:1과 16:9뿐이라 파노라마 판정(2:1 이상)에 걸리는 장이 없고, 전부 기본 블록 리듬을 탄다.
+ * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
+ */
+const LOTTE_THUMB_DIR = `${LOTTE_DIR}/1_thumbnail/optimized`;
+
+const lotteFrames = ["hero", "1", "2", "3"].map((n) => `${LOTTE_THUMB_DIR}/${n}.jpg`);
+
+/** 2_page는 hero를 뺀 1~16이 본문이다 */
+const lotteGallery: GalleryImage[] = Array.from({ length: 16 }, (_, i) => `${i + 1}`).map((n) => ({
+  src: `${LOTTE_DIR}/2_page/optimized/${n}.jpg`,
+  ...lottePageManifest[`${n}.jpg` as keyof typeof lottePageManifest],
+}));
+
+const LG_DIR = "/images/projects/10_LG Brand Expressions";
+
+/**
+ * LG Brand Expressions — 구성은 LOTTE 쪽과 같다.
+ * `hero`가 카드 대표 이미지 / 상세 히어로이고 나머지가 순환·본문이다.
+ *
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
+ *   2_page       q92 — 본문(1~15)은 전부 1920x1080이라 폭 그대로, 히어로만 원본 폭 3646
+ *
+ * 히어로만 따로 뽑은 건 3.38:1 파노라마가 100vw로 그려지기 때문이다. 본문은 16:9뿐이라
+ * 파노라마 판정(2:1 이상)에 걸리는 장이 없고 전부 기본 블록 리듬을 탄다.
+ * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
+ */
+const lgFrames = ["hero", "1", "2", "3", "4"].map(
+  (n) => `${LG_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~15가 본문이다 */
+const lgGallery: GalleryImage[] = Array.from({ length: 15 }, (_, i) => `${i + 1}`).map((n) => ({
+  src: `${LG_DIR}/2_page/optimized/${n}.jpg`,
+  ...lgPageManifest[`${n}.jpg` as keyof typeof lgPageManifest],
+}));
+
+const XMAS_DIR = "/images/projects/11_Lucky Christmas Lounge";
+
+/**
+ * Lucky Christmas Lounge — 구성은 Lucky Garden과 같다.
+ * `hero`가 카드 대표 이미지 / 상세 히어로이고 나머지가 순환·본문이다.
+ *
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
+ *   2_page       q92 — 파노라마(hero·1~4)는 6244 → 3840으로, 4:3인 5만 1920px 폭
+ *
+ * 파노라마를 3840에서 끊는 기준은 Lucky Garden과 같다. 화면 폭을 꽉 채워 그려지지만
+ * 1920px 화면의 레티나도 3840이면 충분하고, 그 위로는 파일만 무거워진다.
+ *
+ * 본문 이미지는 크기를 함께 넘긴다. 3.05:1인 1~4가 파노라마로 가려져 좌우가 잘리지 않는
+ * 전용 블록에 배치되고, 4:3인 5만 기본 블록에 들어간다.
+ * 값은 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
+ */
+const xmasFrames = ["hero", "1", "2", "3"].map(
+  (n) => `${XMAS_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~5가 본문이다 */
+const xmasGallery: GalleryImage[] = Array.from({ length: 5 }, (_, i) => `${i + 1}`).map((n) => ({
+  src: `${XMAS_DIR}/2_page/optimized/${n}.jpg`,
+  ...xmasPageManifest[`${n}.jpg` as keyof typeof xmasPageManifest],
+}));
+
 /**
  * TODO: 프로젝트별 실제 소개 문단으로 교체.
  * 지금은 12개가 같은 문구를 참조하지만 필드는 각자 갖고 있어 하나씩 바꿔 나가면 된다.
@@ -243,7 +323,7 @@ export const projects: Project[] = [
     href: "/work/naver-fall-series-icon",  },
   {
     id: "samsung-st",
-    title: "Samsung ST",
+    title: "Samsung SmartThings ICON",
     description: TODO_DESCRIPTION,
     thumbnail: samsungStFrames[0],
     thumbnails: samsungStFrames,
@@ -290,6 +370,16 @@ export const projects: Project[] = [
     category: ["3D", "MOTIONGRAPHIC", "ARTWORKS"],
     href: "/work/lucky-garden",  },
   {
+    id: "lucky-christmas-lounge",
+    title: "Lucky Christmas Lounge",
+    description: TODO_DESCRIPTION,
+    thumbnail: xmasFrames[0],
+    thumbnails: xmasFrames,
+    hero: `${XMAS_DIR}/2_page/optimized/hero.jpg`,
+    gallery: xmasGallery,
+    category: ["3D", "MOTIONGRAPHIC", "ARTWORKS"],
+    href: "/work/lucky-christmas-lounge",  },
+  {
     id: "dell-s-bg",
     title: "DELL S series BG",
     description: TODO_DESCRIPTION,
@@ -299,6 +389,28 @@ export const projects: Project[] = [
     gallery: dellGallery,
     category: ["ARTWORKS", "3D"],
     href: "/work/dell-s-bg",  },
+  {
+    id: "lotte-nowon-vp-film",
+    title: "LOTTE Dept. Nowon VP Film",
+    description: TODO_DESCRIPTION,
+    thumbnail: lotteFrames[0],
+    thumbnails: lotteFrames,
+    hero: `${LOTTE_DIR}/2_page/optimized/hero.jpg`,
+    gallery: lotteGallery,
+    category: ["2D", "MOTIONGRAPHIC"],
+    href: "/work/lotte-nowon-vp-film",  },
+  {
+    id: "lg-brand-expressions",
+    title: "LG Brand Expressions",
+    description: TODO_DESCRIPTION,
+    thumbnail: lgFrames[0],
+    thumbnails: lgFrames,
+    hero: `${LG_DIR}/2_page/optimized/hero.jpg`,
+    gallery: lgGallery,
+    // 본문 15장이 전부 16:9라 강약을 주는 기본 배치보다 3장씩 규칙적으로 놓는 편이 낫다
+    galleryLayout: "trio",
+    category: ["3D", "MOTIONGRAPHIC"],
+    href: "/work/lg-brand-expressions",  },
   {
     id: "volume-study",
     title: "Volume Study",
