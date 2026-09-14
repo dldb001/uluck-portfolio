@@ -1,5 +1,20 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+/*
+  한글 본문용 Pretendard — 영문은 그대로 Poppins가 맡는다 (font-family 순서로 갈린다, tailwind.config.ts 참고).
+
+  weight별 CSS를 따로 불러오는 건 이 파일들이 "dynamic subset" 방식이라서다. 한 weight가
+  92개 청크로 쪼개져 있고 각 청크에 unicode-range가 붙어 있어, 브라우저가 화면에 실제로 쓰인
+  글자가 든 청크만 내려받는다. 전체 파일(weight당 750KB)이나 통짜 서브셋(267KB)을 받는 것보다
+  훨씬 가볍다.
+
+  필요한 weight만 넣는다 — 여기 없는 굵기를 쓰면 브라우저가 있는 굵기를 합성해 뭉개진다.
+  400 본문 / 500 제목·버튼 / 600·700 강조.
+*/
+import "pretendard/dist/web/static/Pretendard-Regular.css";
+import "pretendard/dist/web/static/Pretendard-Medium.css";
+import "pretendard/dist/web/static/Pretendard-SemiBold.css";
+import "pretendard/dist/web/static/Pretendard-Bold.css";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import CustomCursor from "@/components/CustomCursor";
