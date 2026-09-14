@@ -10,6 +10,18 @@ export function generateStaticParams() {
   return projects.map((p) => ({ id: p.id }));
 }
 
+/*
+  상세 정보 텍스트 크기는 기준값의 70%다. 제목(text-headline)과 Back 링크는 기준 크기 그대로 두고,
+  아래 두 곳에만 적용한다:
+    메타 라벨   11px → 7.7px
+    메타 값     14px → 9.8px   (md 15px → 10.5px)
+    설명 문단   16px → 11.2px  (md 18px → 12.6px)
+  줄 간격은 배수(/[1.9])로 적혀 있어 글자 크기를 따라 자동으로 같이 줄어든다.
+
+  두께는 font-semibold(600)이다. 한글은 Pretendard가 그리는데 이 크기에서는 400·500이 얇게 보인다.
+  600은 layout.tsx에서 실제로 불러오는 웨이트라 브라우저가 합성하지 않고 SemiBold 원본을 쓴다.
+*/
+
 /** 갤러리에 최소한 이만큼은 깔아 레이아웃이 비어 보이지 않게 한다 */
 const MIN_GALLERY = 3;
 
@@ -38,6 +50,19 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
   if (!project) notFound();
 
   const hero = project.hero ?? project.thumbnail;
+
+  /**
+   * 제목 아래 메타 — 값이 있는 항목만 줄이 된다.
+   *
+   * 카테고리는 모든 프로젝트에 있지만 나머지 셋은 PDF 정보를 채운 프로젝트에만 있다
+   * (PROJECT_DETAILS.md 참고). 그래서 항목 수가 1개인 프로젝트와 4개인 프로젝트가 섞인다.
+   */
+  const meta = [
+    { label: "Category", value: project.category.join(", ") },
+    { label: "Client", value: project.client },
+    { label: "Date", value: project.date },
+    { label: "Contribution", value: project.contribution },
+  ].filter((item): item is { label: string; value: string } => Boolean(item.value));
 
   // 전용 갤러리가 있으면 그대로 쓰고, 없으면 레이아웃 확인용으로 썸네일을 반복해서 채운다.
   // TODO: 나머지 프로젝트도 실제 상세 이미지로 교체
@@ -85,9 +110,23 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
           {project.title}
         </h1>
 
-        <p className="mt-4 text-sm uppercase tracking-[0.16em] text-ink/45">
-          {project.category.join(" · ")}
-        </p>
+        {/*
+          메타 — 케이스 스터디처럼 제목 바로 아래에 Client · Date · 참여 정보를 둔다.
+          항목 수가 프로젝트마다 달라(더미는 Category 하나뿐) 고정 열 수 대신 flex-wrap으로
+          채운다. 라벨은 홈 카테고리 버튼과 같은 대문자 + 자간 스타일을 쓴다.
+        */}
+        <dl className="mt-[4vh] flex flex-wrap gap-x-12 gap-y-6 border-t border-ink/10 pt-6">
+          {meta.map((item) => (
+            <div key={item.label} className="min-w-[8rem]">
+              <dt className="text-[7.7px] font-semibold uppercase tracking-[0.16em] text-ink/40">
+                {item.label}
+              </dt>
+              <dd className="mt-2 text-[9.8px] font-semibold text-ink/75 md:text-[10.5px]">
+                {item.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </header>
 
       {/* 2. 히어로 — 좌우 여백 없이 화면 가로를 꽉 채운다 */}
@@ -107,7 +146,7 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
 
       {/* 3. 설명 — 본문 중 가장 좁지만, 여백 축소는 위아래와 같은 비율로 적용한다 */}
       <section className={`mx-auto ${PROSE_W} px-3 py-[9vh]`}>
-        <p className="text-pretty text-base/[1.9] text-ink/70 md:text-lg/[1.9]">
+        <p className="text-pretty text-[11.2px]/[1.9] font-semibold text-ink/70 md:text-[12.6px]/[1.9]">
           {project.description}
         </p>
       </section>

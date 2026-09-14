@@ -7,6 +7,12 @@ import lottePageManifest from "../../public/images/projects/9_LOTTE Dept. Nowon 
 import lgPageManifest from "../../public/images/projects/10_LG Brand Expressions/2_page/optimized/manifest.json";
 import xmasPageManifest from "../../public/images/projects/11_Lucky Christmas Lounge/2_page/optimized/manifest.json";
 import ibkPageManifest from "../../public/images/projects/12_IBK memorial hall/2_page/optimized/manifest.json";
+import kbsPageManifest from "../../public/images/projects/14_KBS NEWS OAP/2_page/optimized/manifest.json";
+import colloquiumPageManifest from "../../public/images/projects/15_Naver Colloquium 2022/2_page/optimized/manifest.json";
+import btsPageManifest from "../../public/images/projects/16_BTS Official Light Stick/2_page/optimized/manifest.json";
+import walletPageManifest from "../../public/images/projects/17_Samsung Wallet/2_page/optimized/manifest.json";
+import mamaPageManifest from "../../public/images/projects/18_CJ MAMA 2024/2_page/optimized/manifest.json";
+import livsmedPageManifest from "../../public/images/projects/19_LIVSMED/2_page/optimized/manifest.json";
 
 const SAMSUNG_DIR = "/images/projects/1_Samsung Browser";
 
@@ -315,6 +321,151 @@ const ibkGallery: GalleryImage[] = Array.from({ length: 10 }, (_, i) => `${i + 1
   ...ibkPageManifest[`${n}.jpg` as keyof typeof ibkPageManifest],
 }));
 
+const GS_DIR = "/images/projects/13_GS_Homeshopping";
+
+/**
+ * GS Homeshopping — 2_page에 이미지가 한 장뿐이라 그 한 장을 상세 히어로로 쓴다.
+ *
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
+ *                (카드 최대 408px, 레티나 816px보다 크므로 축소 없이 그대로)
+ *   2_page       q92 — 2304x1296(16:9) 한 장뿐이라 100vw 히어로용으로 원본 폭 그대로 둔다
+ *
+ * 그래서 gallery 필드는 두지 않는다. 본문에 깔 장이 남지 않아서다 — 상세 페이지가 썸네일을
+ * 반복해 자리만 잡아 주므로(work/[id]/page.tsx 참고) 본문은 임시 화면이다.
+ * 2_page에 본문 이미지가 더 들어오면 KBS처럼 optimized/ + manifest로 gallery를 채우면 된다.
+ */
+const gsFrames = ["hero", "1", "2"].map((n) => `${GS_DIR}/1_thumbnail/optimized/${n}.jpg`);
+
+const KBS_DIR = "/images/projects/14_KBS NEWS OAP";
+
+/**
+ * KBS NEWS OAP — 구성은 LG Brand Expressions와 같다.
+ * 카드 대표 이미지는 1_thumbnail/hero, 상세 히어로는 2_page/hero이고 나머지가 순환·본문이다.
+ *
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
+ *   2_page       q92 — 본문(1~20)은 전부 1920x1080이라 폭 그대로, 히어로만 원본 폭 3840
+ *
+ * 히어로만 따로 뽑은 건 3.06:1 파노라마가 100vw로 그려지기 때문이다. 본문은 16:9뿐이라
+ * 파노라마 판정(2:1 이상)에 걸리는 장이 없다.
+ * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
+ */
+const kbsFrames = ["hero", "1", "2", "3", "4"].map(
+  (n) => `${KBS_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~20이 본문이다 */
+const kbsGallery: GalleryImage[] = Array.from({ length: 20 }, (_, i) => `${i + 1}`).map((n) => ({
+  src: `${KBS_DIR}/2_page/optimized/${n}.jpg`,
+  ...kbsPageManifest[`${n}.jpg` as keyof typeof kbsPageManifest],
+}));
+
+const COLLOQUIUM_DIR = "/images/projects/15_Naver Colloquium 2022";
+
+/**
+ * Naver Colloquium 2022 — 구성은 KBS 쪽과 같지만 본문이 전부 세로다.
+ *
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
+ *   2_page       q92 — 본문(1~10)은 원본이 1200x2000(0.6:1)이라 1920 상한에 걸리지 않고 그대로,
+ *                 히어로만 원본 폭 3840 (3.06:1 파노라마가 100vw로 그려진다)
+ *
+ * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
+ */
+const colloquiumFrames = ["hero", "1", "2", "3"].map(
+  (n) => `${COLLOQUIUM_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~10이 본문이다 */
+const colloquiumGallery: GalleryImage[] = Array.from({ length: 10 }, (_, i) => `${i + 1}`).map(
+  (n) => ({
+    src: `${COLLOQUIUM_DIR}/2_page/optimized/${n}.jpg`,
+    ...colloquiumPageManifest[`${n}.jpg` as keyof typeof colloquiumPageManifest],
+  }),
+);
+
+/**
+ * 16~19번은 네 프로젝트가 같은 모양이다 — 썸네일은 900x1200(3:4), 상세는 2_page/hero 파노라마 +
+ * 16:9 본문. 구성 규칙은 KBS NEWS OAP와 같다.
+ *
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
+ *                (카드 최대 408px, 레티나 816px보다 크므로 축소 없이 그대로)
+ *   2_page       q92 — 본문은 1920px 상한, 히어로만 원본 폭 3840
+ *
+ * 히어로만 따로 뽑은 건 3.06:1 파노라마가 100vw로 그려지기 때문이다. 본문은 16:9뿐이라
+ * 파노라마 판정(2:1 이상)에 걸리는 장이 없고, 그래서 네 프로젝트 모두 galleryLayout이 "trio"다
+ * (전부 같은 비율이고 장수가 많을 때는 강약을 주는 기본 배치보다 규칙적인 편이 낫다).
+ *
+ * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
+ */
+const BTS_DIR = "/images/projects/16_BTS Official Light Stick";
+
+const btsFrames = ["hero", "1", "2", "3"].map(
+  (n) => `${BTS_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~9가 본문이다. 원본이 1400x788이라 1920 상한에 걸리지 않고 그대로 나온다 */
+const btsGallery: GalleryImage[] = Array.from({ length: 9 }, (_, i) => `${i + 1}`).map((n) => ({
+  src: `${BTS_DIR}/2_page/optimized/${n}.jpg`,
+  ...btsPageManifest[`${n}.jpg` as keyof typeof btsPageManifest],
+}));
+
+const WALLET_DIR = "/images/projects/17_Samsung Wallet";
+
+const walletFrames = ["hero", "1", "2"].map(
+  (n) => `${WALLET_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~12가 본문이다. 원본 3840x2160이 1920으로 줄어든다 */
+const walletGallery: GalleryImage[] = Array.from({ length: 12 }, (_, i) => `${i + 1}`).map((n) => ({
+  src: `${WALLET_DIR}/2_page/optimized/${n}.jpg`,
+  ...walletPageManifest[`${n}.jpg` as keyof typeof walletPageManifest],
+}));
+
+const MAMA_DIR = "/images/projects/18_CJ MAMA 2024";
+
+const mamaFrames = ["hero", "1", "2", "3"].map(
+  (n) => `${MAMA_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~9가 본문이다 */
+const mamaGallery: GalleryImage[] = Array.from({ length: 9 }, (_, i) => `${i + 1}`).map((n) => ({
+  src: `${MAMA_DIR}/2_page/optimized/${n}.jpg`,
+  ...mamaPageManifest[`${n}.jpg` as keyof typeof mamaPageManifest],
+}));
+
+const LIVSMED_DIR = "/images/projects/19_LIVSMED";
+
+const livsmedFrames = ["hero", "1", "2", "3", "4"].map(
+  (n) => `${LIVSMED_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/**
+ * 2_page는 hero를 뺀 나머지가 본문인데 번호가 1~11로 이어지지 않는다 —
+ * 8이 8-1~8-5로 쪼개져 있고 9는 없다. 범위로 만들지 않고 파일명 그대로 적는다.
+ */
+const livsmedGallery: GalleryImage[] = [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8-1",
+  "8-2",
+  "8-3",
+  "8-4",
+  "8-5",
+  "10",
+  "11",
+].map((n) => ({
+  src: `${LIVSMED_DIR}/2_page/optimized/${n}.jpg`,
+  ...livsmedPageManifest[`${n}.jpg` as keyof typeof livsmedPageManifest],
+}));
+
 /**
  * TODO: 프로젝트별 실제 소개 문단으로 교체.
  * 지금은 12개가 같은 문구를 참조하지만 필드는 각자 갖고 있어 하나씩 바꿔 나가면 된다.
@@ -331,7 +482,11 @@ export const projects: Project[] = [
   {
     id: "chromatic-systems",
     title: "Samsung Browser BG",
-    description: TODO_DESCRIPTION,
+    client: "SAMSUNG",
+    date: "2025.04 – 2026.05",
+    contribution: "1인 · 스타일프레임 디자인",
+    description:
+      "삼성 브라우저에서 화면을 드래그하거나 기기가 바뀌어도 시각적 흐름이 끊기지 않도록 롱폼으로 디자인한 배경 아트워크입니다.",
     thumbnail: samsungBrowserFrames[0],
     thumbnails: samsungBrowserFrames,
     hero: `${SAMSUNG_DIR}/2_page/optimized/0_hero.jpg`,
@@ -341,7 +496,11 @@ export const projects: Project[] = [
   {
     id: "naver-fall-series-icon",
     title: "Naver Fall series ICON",
-    description: TODO_DESCRIPTION,
+    client: "네이버",
+    date: "2023.09 – 2023.11",
+    contribution: "2인 · 기획, 아이콘 디자인",
+    description:
+      "네이버 서비스 안에서 포인트로 쓰이는 아이콘들을, 가을의 계절감을 담아서 디자인했습니다.",
     thumbnail: naverFrames[0],
     thumbnails: naverFrames,
     // hero / gallery 없음 — 2_page가 준비되기 전까지 상세 페이지는 썸네일로 자리만 잡는다
@@ -350,7 +509,11 @@ export const projects: Project[] = [
   {
     id: "samsung-st",
     title: "Samsung SmartThings ICON",
-    description: TODO_DESCRIPTION,
+    client: "삼성전자",
+    date: "2024.09 – 2024.11",
+    contribution: "4인 · 기획, 아이콘 디자인, 애니메이션",
+    description:
+      "삼성 스마트싱스 앱 환경에서 한눈에 읽히도록, 명확한 아웃라인과 삼성 블루를 포인트 컬러로 아이콘과 OOBE 세트를 디자인했습니다.",
     thumbnail: samsungStFrames[0],
     thumbnails: samsungStFrames,
     // hero / gallery 없음 — 2_page가 준비되기 전까지 상세 페이지는 썸네일로 자리만 잡는다
@@ -359,7 +522,11 @@ export const projects: Project[] = [
   {
     id: "galaxy-watch-icon",
     title: "Galaxy Watch ICON",
-    description: TODO_DESCRIPTION,
+    client: "삼성전자",
+    date: "2024.07 – 2024.09",
+    contribution: "2인 · 기획, 아이콘 디자인, 애니메이션",
+    description:
+      "손목 위 작은 스크린이라는 조건에 맞춰, 갤럭시 워치를 위한 헬스 기능 아이콘 세트를 디자인했습니다.",
     thumbnail: galaxyWatchFrames[0],
     thumbnails: galaxyWatchFrames,
     // hero / gallery 없음 — 2_page가 준비되기 전까지 상세 페이지는 썸네일로 자리만 잡는다
@@ -368,7 +535,11 @@ export const projects: Project[] = [
   {
     id: "dell-2026-bg",
     title: "DELL 2026 BG",
-    description: TODO_DESCRIPTION,
+    client: "DELL",
+    date: "2026.04 – 2026.05",
+    contribution: "1인 · 스타일프레임 디자인",
+    description:
+      "DELL 모니터의 색 재현력이 그대로 드러나야 하는 배경 아트워크라, 채도 높은 컬러들이 한 화면에서 충돌 없이 어울리도록 밸런스 있게 디자인하였습니다.",
     thumbnail: dellColorFrames[0],
     thumbnails: dellColorFrames,
     hero: `${DELL_COLOR_DIR}/2_page/optimized/hero.jpg`,
@@ -378,7 +549,11 @@ export const projects: Project[] = [
   {
     id: "lucky-spectrum",
     title: "Lucky Spectrum",
-    description: TODO_DESCRIPTION,
+    client: "개인 프로젝트",
+    date: "2023.05 – 2023.07",
+    contribution: "1인 · 전체 작업",
+    description:
+      "스쳐 지나가는 도심 공간에 영상 속에서 변화하는 '뜻밖의 행운'의 순간을 포착할 수 있도록 연출한 개인 미디어아트 프로젝트입니다.",
     thumbnail: luckyFrames[0],
     thumbnails: luckyFrames,
     hero: `${LUCKY_DIR}/2_page/optimized/hero.jpg`,
@@ -388,7 +563,11 @@ export const projects: Project[] = [
   {
     id: "lucky-garden",
     title: "Lucky Garden",
-    description: TODO_DESCRIPTION,
+    client: "개인 프로젝트",
+    date: "2023.05 – 2023.07",
+    contribution: "1인 · 전체 작업",
+    description:
+      "스쳐 지나가는 도심 공간에 영상 속에서 변화하는 '뜻밖의 행운'의 순간을 포착할 수 있도록 연출한 개인 미디어아트 프로젝트입니다.",
     thumbnail: gardenFrames[0],
     thumbnails: gardenFrames,
     hero: `${GARDEN_DIR}/2_page/optimized/hero.jpg`,
@@ -398,7 +577,11 @@ export const projects: Project[] = [
   {
     id: "lucky-christmas-lounge",
     title: "Lucky Christmas Lounge",
-    description: TODO_DESCRIPTION,
+    client: "개인 프로젝트",
+    date: "2023.05 – 2023.07",
+    contribution: "1인 · 전체 작업",
+    description:
+      "스쳐 지나가는 도심 공간에 영상 속에서 변화하는 '뜻밖의 행운'의 순간을 포착할 수 있도록 연출한 개인 미디어아트 프로젝트입니다.",
     thumbnail: xmasFrames[0],
     thumbnails: xmasFrames,
     hero: `${XMAS_DIR}/2_page/optimized/hero.jpg`,
@@ -418,7 +601,11 @@ export const projects: Project[] = [
   {
     id: "lotte-nowon-vp-film",
     title: "LOTTE Dept. Nowon VP Film",
-    description: TODO_DESCRIPTION,
+    client: "롯데백화점",
+    date: "2026.02 – 2026.03",
+    contribution: "1인 · 전체 작업",
+    description:
+      "모션 마네킹 뒤 디스플레이에 들어가는 영상이라, 상품을 가리지 않으면서 매장에 활기를 더해야 했습니다. 러닝의 움직임을 픽셀과 데이터 그래픽으로 추상화하고, 빠른 템포로 진행하여 멀리서도 속도감이 읽히도록 구성했습니다.",
     thumbnail: lotteFrames[0],
     thumbnails: lotteFrames,
     hero: `${LOTTE_DIR}/2_page/optimized/hero.jpg`,
@@ -440,7 +627,11 @@ export const projects: Project[] = [
   {
     id: "ibk-memorial-hall",
     title: "IBK memorial hall",
-    description: TODO_DESCRIPTION,
+    client: "IBK 기업은행",
+    date: "2025.06 – 2025.07",
+    contribution: "1인 · 전체 작업",
+    description:
+      "IBK 홍보관 메인 영상으로, 은행이 지나온 시간을 한 편에 담아야 했습니다. 로고의 변천을 축으로 삼아, 시대마다 다른 공간과 재질 위에 로고를 놓으며 과거에서 미래까지를 하나의 흐름으로 이었습니다.",
     thumbnail: ibkFrames[0],
     thumbnails: ibkFrames,
     hero: `${IBK_DIR}/2_page/optimized/hero.jpg`,
@@ -449,6 +640,114 @@ export const projects: Project[] = [
     galleryLayout: "natural",
     category: ["3D", "MOTIONGRAPHIC"],
     href: "/work/ibk-memorial-hall",  },
+  {
+    id: "gs-homeshopping",
+    title: "GS Homeshopping",
+    client: "GS 홈쇼핑",
+    date: "2025.03 – 2025.04",
+    contribution: "2인 · 기획, 스타일프레임 디자인, 애니메틱",
+    description:
+      "브릿지 영상 특성상, 몇 초 안에 뷰티 채널임이 읽혀야 했습니다. 핑크 계열의 화사한 톤과 퍼프·리본 같은 부드러운 질감으로 화면을 채워 시선이 머물도록 구성했습니다.",
+    thumbnail: gsFrames[0],
+    thumbnails: gsFrames,
+    hero: `${GS_DIR}/2_page/optimized/1.jpg`,
+    // gallery 없음 — 2_page의 한 장을 히어로로 썼다. 본문은 썸네일 반복으로 자리만 잡는다
+    category: ["3D", "MOTIONGRAPHIC"],
+    href: "/work/gs-homeshopping",  },
+  {
+    id: "kbs-news-oap",
+    title: "KBS NEWS OAP",
+    client: "KBS",
+    date: "2023.04 – 2023.06",
+    contribution: "2인 · 기획, 스타일프레임 디자인, 애니메틱",
+    description:
+      "KBS 뉴스의 신뢰성과 첨단성을 빛과 파티클로 옮기고, 편성마다 다르게 전개하되 '빛의 라인'이라는 공통 규칙으로 채널 전체를 하나의 브랜드 아이덴티티로 묶은 OAP 디자인입니다.",
+    thumbnail: kbsFrames[0],
+    thumbnails: kbsFrames,
+    hero: `${KBS_DIR}/2_page/optimized/hero.jpg`,
+    gallery: kbsGallery,
+    // 본문 20장이 전부 16:9라 강약을 주는 기본 배치보다 3장씩 규칙적으로 놓는 편이 낫다 (LG와 같다)
+    galleryLayout: "trio",
+    category: ["3D", "MOTIONGRAPHIC"],
+    href: "/work/kbs-news-oap",  },
+  {
+    id: "naver-colloquium-2022",
+    title: "Naver Colloquium 2022",
+    client: "네이버",
+    date: "2022.09 – 2022.11",
+    contribution: "2인 · 스타일프레임 디자인, 애니메틱",
+    description:
+      "네이버의 한 해 기술 성과를 공유하는 콘퍼런스 영상으로, 눈에 보이지 않는 기술 성과를, 디지털 소재의 레이어가 합쳐지고 분해되기를 반복하는 연출로 은유한 영상입니다.",
+    thumbnail: colloquiumFrames[0],
+    thumbnails: colloquiumFrames,
+    hero: `${COLLOQUIUM_DIR}/2_page/optimized/hero.jpg`,
+    gallery: colloquiumGallery,
+    // 본문 10장이 전부 0.6:1 세로라 기본 배치의 가로 틀에 넣으면 위아래가 크게 잘린다.
+    // trio는 첫 장의 실제 비율을 모든 칸에 그대로 쓰므로 잘리는 데가 없다.
+    galleryLayout: "trio",
+    category: ["3D", "MOTIONGRAPHIC"],
+    href: "/work/naver-colloquium-2022",  },
+  {
+    id: "bts-official-light-stick",
+    title: "BTS Official Light Stick",
+    client: "HYBE",
+    date: "2025.10 – 2025.12",
+    contribution: "4인 · 스타일프레임 디자인, 애니메틱",
+    description:
+      "BTS의 복귀에 맞춰 출시되는 응원봉으로, 제품 소개인 동시에 복귀를 알리는 신호가 되었던 영상입니다. 무대 조명이 터지는 순간을 그대로 연출로 옮겨, 응원봉의 발광 기능이 복귀의 장면으로 연상되도록 구성했습니다.",
+    thumbnail: btsFrames[0],
+    thumbnails: btsFrames,
+    hero: `${BTS_DIR}/2_page/optimized/hero.jpg`,
+    gallery: btsGallery,
+    // 본문 9장이 전부 16:9 — 규칙적으로 3장씩 놓는다 (16~19번 공통)
+    galleryLayout: "trio",
+    category: ["3D", "MOTIONGRAPHIC"],
+    href: "/work/bts-official-light-stick",  },
+  {
+    id: "samsung-wallet",
+    title: "Samsung Wallet",
+    client: "삼성전자",
+    date: "2023.10 – 2024.01",
+    contribution: "4인 · 스타일프레임 디자인, 애니메틱",
+    description:
+      "갤럭시 안에 담기는 다양한 서비스와 기능을 반복해서 보게 되는 새티스파잉한 연출로 풀고, 끝과 시작이 이어지는 루핑 구조로 구성했습니다.",
+    thumbnail: walletFrames[0],
+    thumbnails: walletFrames,
+    hero: `${WALLET_DIR}/2_page/optimized/hero.jpg`,
+    gallery: walletGallery,
+    galleryLayout: "trio",
+    category: ["3D", "MOTIONGRAPHIC"],
+    href: "/work/samsung-wallet",  },
+  {
+    id: "cj-mama-2024",
+    title: "CJ MAMA 2024",
+    client: "CJ ENM",
+    date: "2024.10 – 2024.11",
+    contribution: "3인 · 기획, 스타일프레임 디자인, 애니메틱",
+    description:
+      "콘텐츠·푸드·뷰티까지 CJ 그룹의 여러 키워드를 'MAKES ONE'이라는 한 메시지로 묶어야 했습니다. 레트로 UI와 픽셀 그래픽, 콜라주를 공통 언어로 삼아 서로 다른 소재가 한 화면으로 읽히도록 구성했습니다.",
+    thumbnail: mamaFrames[0],
+    thumbnails: mamaFrames,
+    hero: `${MAMA_DIR}/2_page/optimized/hero.jpg`,
+    gallery: mamaGallery,
+    galleryLayout: "trio",
+    category: ["2D", "MOTIONGRAPHIC"],
+    href: "/work/cj-mama-2024",  },
+  {
+    id: "livsmed",
+    title: "LIVSMED",
+    client: "리브스메드",
+    date: "2025.04 – 2025.06",
+    contribution: "4인 · 기획, 스타일프레임 디자인, 애니메틱",
+    description:
+      "수술 도구를 소개하는 영상이라, 시술 장면이 주는 부담을 덜면서 기능은 정확히 전달해야 했습니다. 장기를 풍선 스타일로 표현하여 시술 과정을 보여주고, 도구의 작동 원리는 그대로 읽히도록 구성했습니다.",
+    thumbnail: livsmedFrames[0],
+    thumbnails: livsmedFrames,
+    hero: `${LIVSMED_DIR}/2_page/optimized/hero.jpg`,
+    gallery: livsmedGallery,
+    galleryLayout: "trio",
+    category: ["3D", "MOTIONGRAPHIC"],
+    href: "/work/livsmed",  },
   {
     id: "volume-study",
     title: "Volume Study",

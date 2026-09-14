@@ -37,6 +37,18 @@ export type GalleryLayout = "rhythm" | "trio" | "natural";
 export interface Project {
   id: string;
   title: string;
+  /**
+   * 상세 페이지 제목 아래 메타 — PDF 포트폴리오에서 옮겨 온 정보다(PROJECT_DETAILS.md 참고).
+   *
+   * 셋 다 선택 항목이다. 매칭이 확정되지 않은 프로젝트와 더미 프로젝트는 비워 두고,
+   * 상세 페이지는 값이 있는 항목만 줄을 만든다 (work/[id]/page.tsx 참고).
+   */
+  /** 클라이언트 — "삼성전자", "HYBE" */
+  client?: string;
+  /** 작업 기간 — "2025.10 – 2025.12" */
+  date?: string;
+  /** 참여 인원과 맡은 작업 — "4인 · 기획, 스타일프레임 디자인" */
+  contribution?: string;
   /** public/images 경로 or 외부 URL — 호버하지 않은 평소 상태에 보이는 대표 이미지 */
   thumbnail: string;
   /**
