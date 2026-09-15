@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-label="Room 404">
-  <rect width="900" height="1200" fill="#C9C2B2"/>
-  <circle cx="540" cy="336" r="225" fill="#141414"/>
-  <rect x="90" y="744" width="414" height="168" rx="84" fill="#F7F4EC"/>
-  <rect x="0" y="1186" width="900" height="14" fill="#F7F4EC"/>
-  <text x="63" y="1104" fill="#141414" font-family="Helvetica, Arial, sans-serif" font-size="41" font-weight="600" letter-spacing="-0.5">Room 404</text>
-</svg>

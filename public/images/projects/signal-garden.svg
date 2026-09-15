@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-label="Signal Garden">
-  <rect width="900" height="1200" fill="#E7E1D3"/>
-  <circle cx="360" cy="336" r="288" fill="#141414"/>
-  <rect x="90" y="828" width="414" height="168" rx="84" fill="#E8613C"/>
-  <rect x="0" y="1186" width="900" height="14" fill="#E8613C"/>
-  <text x="63" y="1104" fill="#141414" font-family="Helvetica, Arial, sans-serif" font-size="41" font-weight="600" letter-spacing="-0.5">Signal Garden</text>
-</svg>

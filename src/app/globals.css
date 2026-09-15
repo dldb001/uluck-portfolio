@@ -64,6 +64,28 @@ body {
   }
 }
 
+/* ── 홈 터치 스크롤 ──
+   홈은 스크롤 없는 한 화면(page.tsx의 h-dvh + overflow-hidden)인데, 터치 기기에서 카드를 옆으로
+   넘기려다 손가락이 조금만 비스듬해지면 브라우저가 세로 팬으로 판정해 페이지가 위아래로
+   흔들리고(iOS 러버밴드 · 당겨서 새로고침) 카드 드래그는 pointercancel로 끊겼다.
+
+   touch-action은 터치·펜 입력에만 걸리는 속성이라 마우스 동작에는 아무 영향이 없다 —
+   그래서 미디어 쿼리로 가리지 않는다. 데스크톱의 휠·드래그는 그대로다.
+
+   .home-touch  — 홈 전체. 세로 팬만 막고 가로 팬과 핀치줌은 둔다. 가로로 스크롤할 건 없으니
+                  브라우저가 가로 팬을 가져가도 아무 일도 없고, 세로 팬은 시작 자체가 안 된다.
+   .track-touch — 카드 트랙. framer-motion이 drag="x" 요소에 인라인으로 touch-action: pan-y를
+                  넣어 세로 팬을 브라우저에 넘기는데, 여기서는 그게 바로 위 증상이다. 인라인
+                  스타일이라 !important로만 덮인다. none으로 두면 모든 터치 제스처가 framer의
+                  포인터 드래그로 가고, drag="x"라 가로 성분만 트랙을 움직인다. */
+.home-touch {
+  touch-action: pan-x pinch-zoom;
+}
+
+.track-touch {
+  touch-action: none !important;
+}
+
 /* Lenis */
 html.lenis,
 html.lenis body {

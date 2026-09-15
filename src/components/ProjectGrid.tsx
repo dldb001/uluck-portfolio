@@ -375,8 +375,9 @@ export default function ProjectGrid({ projects, hoveredId = null, onCardHoverCha
               onPointerDownCapture={handlePointerDown}
               onPointerMoveCapture={handlePointerMove}
               onFocusCapture={handleFocusCapture}
-              // gap / 좌우 패딩 모두 기준값의 120%
-              className="flex w-max cursor-grab items-start gap-[1.2rem] px-[1.8rem] active:cursor-grabbing md:gap-[1.8rem] md:px-[3rem]"
+              // gap / 좌우 패딩 모두 기준값의 120%.
+              // track-touch: 터치에서 framer가 넣는 touch-action: pan-y를 덮어 세로 팬을 막는다 (globals.css 참고)
+              className="track-touch flex w-max cursor-grab items-start gap-[1.2rem] px-[1.8rem] active:cursor-grabbing md:gap-[1.8rem] md:px-[3rem]"
             >
               <AnimatePresence mode="popLayout" initial={false}>
                 {projects.map((project) => (
