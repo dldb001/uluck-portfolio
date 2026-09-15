@@ -112,7 +112,7 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
 
         {/*
           메타 — 케이스 스터디처럼 제목 바로 아래에 Client · Date · 참여 정보를 둔다.
-          항목 수가 프로젝트마다 달라(더미는 Category 하나뿐) 고정 열 수 대신 flex-wrap으로
+          항목 수가 프로젝트마다 달라(PDF에 없는 프로젝트는 Category 하나뿐) 고정 열 수 대신 flex-wrap으로
           채운다. 라벨은 홈 카테고리 버튼과 같은 대문자 + 자간 스타일을 쓴다.
         */}
         <dl className="mt-[4vh] flex flex-wrap gap-x-12 gap-y-6 border-t border-ink/10 pt-6">

@@ -13,6 +13,7 @@ import btsPageManifest from "../../public/images/projects/16_BTS Official Light 
 import walletPageManifest from "../../public/images/projects/17_Samsung Wallet/2_page/optimized/manifest.json";
 import mamaPageManifest from "../../public/images/projects/18_CJ MAMA 2024/2_page/optimized/manifest.json";
 import livsmedPageManifest from "../../public/images/projects/19_LIVSMED/2_page/optimized/manifest.json";
+import ifezPageManifest from "../../public/images/projects/20_IFEZ Anamorphic/2_page/optimized/manifest.json";
 
 const SAMSUNG_DIR = "/images/projects/1_Samsung Browser";
 
@@ -466,18 +467,27 @@ const livsmedGallery: GalleryImage[] = [
   ...livsmedPageManifest[`${n}.jpg` as keyof typeof livsmedPageManifest],
 }));
 
+const IFEZ_DIR = "/images/projects/20_IFEZ Anamorphic";
+
+const ifezFrames = ["hero", "1", "2", "3", "4"].map(
+  (n) => `${IFEZ_DIR}/1_thumbnail/optimized/${n}.jpg`,
+);
+
+/** 2_page는 hero를 뺀 1~8이 본문이다 */
+const ifezGallery: GalleryImage[] = Array.from({ length: 8 }, (_, i) => `${i + 1}`).map((n) => ({
+  src: `${IFEZ_DIR}/2_page/optimized/${n}.jpg`,
+  ...ifezPageManifest[`${n}.jpg` as keyof typeof ifezPageManifest],
+}));
+
 /**
- * TODO: 프로젝트별 실제 소개 문단으로 교체.
- * 지금은 12개가 같은 문구를 참조하지만 필드는 각자 갖고 있어 하나씩 바꿔 나가면 된다.
+ * TODO: 실제 소개 문단으로 교체.
+ * PDF 포트폴리오(PROJECT_DETAILS.md)에 항목이 없는 DELL S series BG와 LG Brand Expressions만 남았다.
  */
 const TODO_DESCRIPTION =
   "TODO: 이 프로젝트의 배경과 역할, 사용한 도구와 결과를 한 단락으로 소개합니다. " +
   "무엇을 만들었고 어떤 문제를 풀었는지, 작업에서 무엇을 맡았는지를 적어 주세요.";
 
-/**
- * 더미 프로젝트 데이터.
- * TODO: 실제 프로젝트 콘텐츠(이미지·제목·카테고리 태깅)로 교체 (SPEC 5번 항목)
- */
+/** 그리드에 나오는 순서 그대로 — public/images/projects의 폴더 번호와 같다 */
 export const projects: Project[] = [
   {
     id: "chromatic-systems",
@@ -749,80 +759,19 @@ export const projects: Project[] = [
     category: ["3D", "MOTIONGRAPHIC"],
     href: "/work/livsmed",  },
   {
-    id: "volume-study",
-    title: "Volume Study",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/volume-study.svg",
-    category: ["3D"],
-    href: "/work/volume-study",  },
-  {
-    id: "paper-signals",
-    title: "Paper Signals",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/paper-signals.svg",
-    category: ["2D", "ARTWORKS"],
-    href: "/work/paper-signals",  },
-  {
-    id: "kinetic-identity",
-    title: "Kinetic Identity",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/kinetic-identity.svg",
-    category: ["MOTIONGRAPHIC"],
-    href: "/work/kinetic-identity",  },
-  {
-    id: "room-404",
-    title: "Room 404",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/room-404.svg",
-    category: ["MEDIA ART", "3D"],
-    href: "/work/room-404",  },
-  {
-    id: "ledger",
-    title: "Ledger",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/ledger.svg",
-    category: ["UI"],
-    href: "/work/ledger",  },
-  {
-    id: "soft-machines",
-    title: "Soft Machines",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/soft-machines.svg",
-    category: ["3D", "MOTIONGRAPHIC"],
-    href: "/work/soft-machines",  },
-  {
-    id: "fieldnotes",
-    title: "Fieldnotes",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/fieldnotes.svg",
-    category: ["2D"],
-    href: "/work/fieldnotes",  },
-  {
-    id: "signal-garden",
-    title: "Signal Garden",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/signal-garden.svg",
-    category: ["MEDIA ART", "ARTWORKS"],
-    href: "/work/signal-garden",  },
-  {
-    id: "orbit-os",
-    title: "Orbit OS",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/orbit-os.svg",
-    category: ["UI", "3D"],
-    href: "/work/orbit-os",  },
-  {
-    id: "ink-drift",
-    title: "Ink Drift",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/ink-drift.svg",
-    category: ["ARTWORKS", "2D"],
-    href: "/work/ink-drift",  },
-  {
-    id: "nightshift",
-    title: "Nightshift",
-    description: TODO_DESCRIPTION,
-    thumbnail: "/images/projects/nightshift.svg",
-    category: ["MOTIONGRAPHIC", "MEDIA ART"],
-    href: "/work/nightshift",  },
+    id: "ifez-anamorphic",
+    title: "IFEZ Anamorphic",
+    client: "IFEZ",
+    date: "2025.01 – 2025.04",
+    contribution: "5인 · 기획, 스타일프레임 디자인, 애니메틱",
+    description:
+      "송도·청라·영종 세 자유구역의 특성을 담아야 하는 아나몰픽 영상이었습니다. 미술관의 액자를 화면 장치로 삼아 구역마다 다른 장면을 담고, 액자 안쪽으로 공간이 파고드는 입체감을 살렸습니다.",
+    thumbnail: ifezFrames[0],
+    thumbnails: ifezFrames,
+    hero: `${IFEZ_DIR}/2_page/optimized/hero.jpg`,
+    gallery: ifezGallery,
+    // 본문 8장이 전부 1920x1248 한 비율 — 16~19번처럼 3장씩 놓는다
+    galleryLayout: "trio",
+    category: ["3D", "MOTIONGRAPHIC", "MEDIA ART"],
+    href: "/work/ifez-anamorphic",  },
 ];
