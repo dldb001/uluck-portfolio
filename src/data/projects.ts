@@ -1,4 +1,5 @@
-﻿import type { GalleryImage, Project } from "@/lib/types";
+﻿import type { GalleryImage, GalleryItem, Project } from "@/lib/types";
+import samsungPageManifest from "../../public/images/projects/1_Samsung Browser/2_page/optimized/manifest.json";
 import dellPageManifest from "../../public/images/projects/5_Dell_BG_S/2_page/optimized/manifest.json";
 import dellColorPageManifest from "../../public/images/projects/4_Dell_BG_color/2_page/optimized/manifest.json";
 import luckyPageManifest from "../../public/images/projects/7_Lucky Spectrum/2_page/optimized/manifest.json";
@@ -47,13 +48,37 @@ const samsungBrowserFrames = [
 ];
 
 /**
- * 상세 페이지 본문 이미지 그리드.
- * 전부 2304x1296(16:9)이라 파노라마 판정이 걸릴 일이 없어 크기는 넘기지 않는다
- * (다음에 이 폴더를 다시 뽑으면 manifest.json이 생기므로 DELL처럼 옮겨 오면 된다).
+ * 상세 페이지 본문 — 문단 · 기기 목업(0) · 문단 · 스타일프레임 1~14 순서다.
+ *
+ * 0은 5880x3772 원본을 정확히 절반(2940px)으로 뽑은 기기 목업이다. 폰·태블릿·PC를 한 장에
+ * 담은 그림이라 롱폼 설명 바로 아래에 두고, 위아래 여백까지 그대로 보이도록 solo로 한 행을
+ * 통째로 준다 (16:9 틀에 넣으면 위아래가 잘린다). 크기는 manifest에서 온다 — 이 폴더는
+ * 0만 다시 뽑아서 manifest에 0.jpg 하나뿐이다.
+ *
+ * 1~14는 전부 2304x1296(16:9)이라 파노라마 판정이 걸릴 일이 없어 크기는 넘기지 않는다
+ * (다음에 이 폴더를 통째로 다시 뽑으면 manifest가 채워지므로 DELL처럼 옮겨 오면 된다).
  */
-const samsungBrowserGallery: GalleryImage[] = SAMSUNG_INDEXES.map((n) => ({
-  src: `${SAMSUNG_DIR}/2_page/optimized/${n}.jpg`,
-}));
+const samsungBrowserGallery: GalleryItem[] = [
+  // 줄바꿈 지점은 정해진 대로다 — "\n"이 그 자리에서 줄을 나눈다 (GalleryText 참고)
+  {
+    text:
+      "삼성 브라우저 월페이퍼는 스마트폰, 태블릿, PC 등 다양한 기기 환경을 고려해 가변적인 활용이 가능하도록 확장성 있고 긴 포맷으로 디자인되었습니다.\n" +
+      "기기가 바뀌거나 화면을 드래그할 때도 시각적 흐름이 끊기지 않고 자연스럽게 이어져 연속적인 사용성을 제공합니다.",
+  },
+  {
+    src: `${SAMSUNG_DIR}/2_page/optimized/0.jpg`,
+    ...samsungPageManifest["0.jpg"],
+    solo: true,
+  },
+  {
+    text:
+      "블러(Blur) 강도를 활용해 스크린 바깥쪽에 머무는 영역과 안쪽으로 전개되는 영역 간의 깊이감(단차)을 주어\n" +
+      "화면 속 공간이 더욱 입체적으로 느껴지도록 사용하는 재미와 시각적 몰입감을 더했습니다.",
+  },
+  ...SAMSUNG_INDEXES.map((n) => ({
+    src: `${SAMSUNG_DIR}/2_page/optimized/${n}.jpg`,
+  })),
+];
 
 const DELL_DIR = "/images/projects/5_Dell_BG_S";
 

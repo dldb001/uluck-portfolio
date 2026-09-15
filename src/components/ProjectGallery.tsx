@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import type { GalleryImage, GalleryLayout } from "@/lib/types";
+import { isGalleryText, type GalleryImage, type GalleryItem, type GalleryLayout } from "@/lib/types";
+import { BODY_TEXT, PROSE_W } from "@/lib/styles";
 
 /**
  * 상세 페이지 본문 이미지 그리드.
@@ -8,10 +9,11 @@ import type { GalleryImage, GalleryLayout } from "@/lib/types";
  * 같은 크기가 계속 반복되면 단조로우므로 네 가지 블록을 순서대로 돌려 쓴다.
  * 블록마다 아래 여백이 달라서 세로로도 리듬이 생긴다 — 큰 이미지 뒤일수록 더 넉넉하게.
  *
- * 파노라마(아주 가로로 긴 그림)만 예외로 리듬에서 빼내 자기 행을 통째로 쓴다.
- * 아래 틀들은 비율이 고정이라, 그 안에 넣으면 object-cover가 좌우를 크게 잘라내기 때문이다.
+ * 파노라마(아주 가로로 긴 그림)와 solo로 표시한 이미지만 예외로 리듬에서 빼내 자기 행을
+ * 통째로 쓴다. 아래 틀들은 비율이 고정이라, 그 안에 넣으면 object-cover가 가장자리를
+ * 잘라내기 때문이다 — 파노라마는 좌우가 크게, 여백이 넉넉한 목업은 위아래가 잘린다.
  */
-type BlockKind = "pano" | "full" | "duo" | "asym" | "trio";
+type BlockKind = "solo" | "full" | "duo" | "asym" | "trio";
 
 const BLOCKS: { kind: BlockKind; count: number }[] = [
   { kind: "full", count: 1 },
@@ -22,7 +24,7 @@ const BLOCKS: { kind: BlockKind; count: number }[] = [
 
 /** 블록 아래 여백 — 큰 블록일수록 더 준다 */
 const SPACING: Record<BlockKind, string> = {
-  pano: "mb-[7vh]",
+  solo: "mb-[7vh]",
   full: "mb-[9vh]",
   duo: "mb-[6vh]",
   asym: "mb-[7vh]",
@@ -36,17 +38,20 @@ const SPACING: Record<BlockKind, string> = {
  */
 const PANORAMA_RATIO = 2;
 
-/** 비율을 모르면(manifest에 없으면) 파노라마 판정을 하지 않는다 */
-function isPanorama(img: GalleryImage) {
+/**
+ * 자기 행을 통째로 쓰는 이미지인지 — 파노라마이거나 solo로 표시된 것.
+ * 둘 다 틀의 비율을 그림에 맞춰야 하므로 크기를 모르면(manifest에 없으면) 해당하지 않는다.
+ */
+function isSolo(img: GalleryImage) {
   if (!img.width || !img.height) return false;
-  return img.width / img.height >= PANORAMA_RATIO;
+  return img.solo === true || img.width / img.height >= PANORAMA_RATIO;
 }
 
 /**
  * 이미지 목록을 블록 순서대로 잘라 나눈다.
  *
- * 파노라마를 만나면 리듬 순서(cursor)를 건드리지 않고 그 자리에서 한 행을 빼 준다.
- * 순서를 소비하지 않으므로, 사이에 파노라마가 끼어도 나머지 이미지들의
+ * 파노라마·solo를 만나면 리듬 순서(cursor)를 건드리지 않고 그 자리에서 한 행을 빼 준다.
+ * 순서를 소비하지 않으므로, 사이에 그런 이미지가 끼어도 나머지 이미지들의
  * full → duo → asym → trio 흐름은 그대로 이어진다.
  *
  * 마지막에 남은 장수가 블록 크기보다 적으면 그 수에 맞는 블록으로 대체해
@@ -58,16 +63,16 @@ function toBlocks(images: GalleryImage[]) {
   let cursor = 0;
 
   while (i < images.length) {
-    if (isPanorama(images[i])) {
-      blocks.push({ kind: "pano", images: [images[i]] });
+    if (isSolo(images[i])) {
+      blocks.push({ kind: "solo", images: [images[i]] });
       i += 1;
       continue;
     }
 
-    // 다음 파노라마(또는 목록 끝)까지 이어지는 일반 이미지 수.
-    // 블록이 이 경계를 넘지 않아야 파노라마가 행 중간에 끼어들지 않는다.
+    // 다음 단독 행(또는 목록 끝)까지 이어지는 일반 이미지 수.
+    // 블록이 이 경계를 넘지 않아야 단독 행 이미지가 블록 중간에 끼어들지 않는다.
     let run = 0;
-    while (i + run < images.length && !isPanorama(images[i + run])) run += 1;
+    while (i + run < images.length && !isSolo(images[i + run])) run += 1;
 
     let { kind, count } = BLOCKS[cursor % BLOCKS.length];
 
@@ -266,17 +271,78 @@ function NaturalGallery({ images }: { images: GalleryImage[] }) {
   );
 }
 
+/**
+ * 이미지 목록을 문단 경계로 나눈다 — [이미지들] 문단 [이미지들] ... 순서를 그대로 보존한다.
+ * 문단이 없으면 이미지 묶음 하나뿐이다.
+ */
+function toSegments(items: GalleryItem[]) {
+  const segments: ({ kind: "images"; images: GalleryImage[] } | { kind: "text"; text: string })[] =
+    [];
+
+  for (const item of items) {
+    if (isGalleryText(item)) {
+      segments.push({ kind: "text", text: item.text });
+      continue;
+    }
+    const open = segments[segments.length - 1];
+    if (open && open.kind === "images") open.images.push(item);
+    else segments.push({ kind: "images", images: [item] });
+  }
+
+  return segments;
+}
+
+/**
+ * 그리드 사이 문단 — 소개 문단(work/[id]/page.tsx)과 같은 폭·같은 왼쪽 시작점이고 글자만 1.2배다.
+ *
+ * 위 여백은 앞 이미지 블록의 아래 여백(SPACING)과 겹쳐 큰 쪽만 남는다 (마진 상쇄).
+ *
+ * 맨 앞에 오는 문단은 바로 위 소개 문단에 이어지는 글이라 이미지 사이 여백(6vh) 대신
+ * 빈 줄 하나만큼(1.9em = 줄 간격 한 줄)만 띄운다. 소개 문단 섹션은 이 경우 아래 패딩을
+ * 두지 않는다 (work/[id]/page.tsx) — 패딩은 마진과 상쇄되지 않아 그대로 더해지기 때문이다.
+ */
+function Paragraph({ text, first }: { text: string; first: boolean }) {
+  return (
+    <p className={`${PROSE_W} ${BODY_TEXT} ${first ? "mt-[1.9em]" : "mt-[6vh]"} mb-[6vh]`}>
+      {text}
+    </p>
+  );
+}
+
 export default function ProjectGallery({
   images,
   layout = "rhythm",
 }: {
-  images: GalleryImage[];
+  images: GalleryItem[];
   layout?: GalleryLayout;
 }) {
-  if (layout === "trio") return <TrioGallery images={images} />;
-  if (layout === "natural") return <NaturalGallery images={images} />;
+  const segments = toSegments(images);
 
-  const blocks = toBlocks(images);
+  // 문단이 하나라도 있으면 이미지 묶음마다 배치를 따로 돌린다 — 묶음 안에서는 아래와 같은 규칙이다
+  if (segments.length > 1) {
+    return (
+      <div>
+        {segments.map((seg, i) =>
+          seg.kind === "text" ? (
+            <Paragraph key={i} text={seg.text} first={i === 0} />
+          ) : (
+            <div key={i} className={i === segments.length - 1 ? "" : "mb-[6vh]"}>
+              <ProjectGallery images={seg.images} layout={layout} />
+            </div>
+          ),
+        )}
+      </div>
+    );
+  }
+
+  const only = segments[0];
+  if (!only || only.kind !== "images") return null;
+  const plain = only.images;
+
+  if (layout === "trio") return <TrioGallery images={plain} />;
+  if (layout === "natural") return <NaturalGallery images={plain} />;
+
+  const blocks = toBlocks(plain);
   const gap = "gap-4 md:gap-6";
 
   return (
@@ -285,8 +351,8 @@ export default function ProjectGallery({
         const spacing = i === blocks.length - 1 ? "" : SPACING[block.kind];
         const [a, b, c] = block.images;
 
-        // 파노라마 — 한 행을 통째로 쓰고, 틀의 비율을 그림에 맞춰 잘리는 데 없이 다 보여준다
-        if (block.kind === "pano") {
+        // 파노라마·solo — 한 행을 통째로 쓰고, 틀의 비율을 그림에 맞춰 잘리는 데 없이 다 보여준다
+        if (block.kind === "solo") {
           return (
             <div key={i} className={spacing}>
               <Frame

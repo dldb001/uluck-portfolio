@@ -20,6 +20,30 @@ export interface GalleryImage {
   src: string;
   width?: number;
   height?: number;
+  /**
+   * 한 행을 통째로 쓰고 원본 비율 그대로 보여준다 (rhythm 배치에서만 의미가 있다).
+   * 파노라마 판정과 같은 블록으로 가므로 width/height가 있어야 한다 — 없으면 무시된다.
+   * 여백이 넉넉한 목업처럼 16:9 틀에 넣어 위아래를 잘라내고 싶지 않은 이미지에 쓴다.
+   */
+  solo?: boolean;
+}
+
+/**
+ * 본문 그리드 사이에 끼워 넣는 문단 (스타일은 lib/styles.ts의 BODY_TEXT).
+ * 텍스트 안의 개행("\n")은 그 자리에서 줄바꿈된다 — 원하는 지점에서 줄을 나눌 때 쓴다.
+ */
+export interface GalleryText {
+  text: string;
+}
+
+/**
+ * 본문 그리드의 항목 하나 — 이미지 또는 문단.
+ * 문단은 이미지 흐름을 끊는 경계가 된다: 앞뒤 이미지들은 각각 따로 배치되고 그 사이에 글이 선다.
+ */
+export type GalleryItem = GalleryImage | GalleryText;
+
+export function isGalleryText(item: GalleryItem): item is GalleryText {
+  return "text" in item;
 }
 
 /**
@@ -60,8 +84,8 @@ export interface Project {
   description: string;
   /** 상세 페이지 풀블리드 히어로 이미지 (없으면 thumbnail로 대체) */
   hero?: string;
-  /** 상세 페이지 본문 이미지 그리드 (없으면 thumbnail을 반복해 레이아웃만 잡는다) */
-  gallery?: GalleryImage[];
+  /** 상세 페이지 본문 이미지 그리드 — 사이에 문단을 끼울 수 있다 (없으면 thumbnail을 반복해 레이아웃만 잡는다) */
+  gallery?: GalleryItem[];
   /** 본문 그리드 배치 방식 (없으면 "rhythm") */
   galleryLayout?: GalleryLayout;
   /** 여러 카테고리 중복 태깅 가능 */

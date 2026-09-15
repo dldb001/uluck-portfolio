@@ -5,21 +5,23 @@ import Footer from "@/components/Footer";
 import HomeScreen from "@/components/HomeScreen";
 import ProjectGallery from "@/components/ProjectGallery";
 import { projects } from "@/data/projects";
+import { isGalleryText } from "@/lib/types";
+import { PROSE_TEXT, PROSE_W } from "@/lib/styles";
 
 export function generateStaticParams() {
   return projects.map((p) => ({ id: p.id }));
 }
 
 /*
-  상세 정보 텍스트 크기는 기준값의 70%다. 제목(text-headline)과 Back 링크는 기준 크기 그대로 두고,
-  아래 두 곳에만 적용한다:
-    메타 라벨   11px → 7.7px
-    메타 값     14px → 9.8px   (md 15px → 10.5px)
-    설명 문단   16px → 11.2px  (md 18px → 12.6px)
+  상세 정보 텍스트 크기. 제목(text-headline)과 Back 링크는 기준 크기 그대로 두고, 아래만 줄인다:
+    메타 라벨   11px → 7.7px           (기준의 70%)
+    메타 값     14px → 9.8px   (md 15px → 10.5px)   (기준의 70%)
+    설명 문단   16px → 13.44px (md 18px → 15.12px)  (기준의 84% — 그리드 사이 본문과 같은 크기)
   줄 간격은 배수(/[1.9])로 적혀 있어 글자 크기를 따라 자동으로 같이 줄어든다.
 
   두께는 font-semibold(600)이다. 한글은 Pretendard가 그리는데 이 크기에서는 400·500이 얇게 보인다.
   600은 layout.tsx에서 실제로 불러오는 웨이트라 브라우저가 합성하지 않고 SemiBold 원본을 쓴다.
+  설명 문단의 클래스는 그리드 사이 문단과 공유하므로 lib/styles.ts(PROSE_TEXT)에 있다.
 */
 
 /** 갤러리에 최소한 이만큼은 깔아 레이아웃이 비어 보이지 않게 한다 */
@@ -41,9 +43,6 @@ const MIN_GALLERY = 3;
  * 부모폭보다 커지는데, 그때는 다시 부모폭으로 눌러 예전과 똑같이 동작하게 한다.
  */
 const CONTENT_W = "w-[calc((100%_+_72rem)/2)] max-w-full";
-
-/** 설명 문단도 같은 방식으로 — 기준 폭만 max-w-3xl(48rem)이다 */
-const PROSE_W = "w-[calc((100%_+_48rem)/2)] max-w-full";
 
 export default function WorkDetail({ params }: { params: { id: string } }) {
   const project = projects.find((p) => p.id === params.id);
@@ -70,6 +69,13 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
     project.gallery?.length
       ? project.gallery
       : Array.from({ length: MIN_GALLERY }, () => ({ src: project.thumbnail }));
+
+  /**
+   * 본문이 문단으로 시작하면 소개 문단과 글이 곧장 이어진다 — 그 사이는 이미지 앞 여백(9vh)이
+   * 아니라 빈 줄 하나(ProjectGallery의 Paragraph가 mt-[1.9em]으로 준다)여야 한다.
+   * 그래서 이 경우 소개 섹션의 아래 패딩을 뺀다. 패딩은 마진과 상쇄되지 않아 그대로 더해진다.
+   */
+  const leadsWithText = isGalleryText(gallery[0]);
 
   return (
     <main className="min-h-screen overflow-x-hidden">
@@ -144,11 +150,13 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
         />
       </div>
 
-      {/* 3. 설명 — 본문 중 가장 좁지만, 여백 축소는 위아래와 같은 비율로 적용한다 */}
-      <section className={`mx-auto ${PROSE_W} px-3 py-[9vh]`}>
-        <p className="text-pretty text-[11.2px]/[1.9] font-semibold text-ink/70 md:text-[12.6px]/[1.9]">
-          {project.description}
-        </p>
+      {/*
+        3. 설명 — 그리드와 같은 CONTENT_W 컨테이너 안에 PROSE_W로 놓는다.
+        그리드 사이 문단(ProjectGallery)도 정확히 이 구조라 두 문단의 왼쪽 시작점이 일치한다.
+        (PROSE_W가 부모 폭 기준이라 컨테이너가 다르면 시작점이 어긋난다 — lib/styles.ts 참고)
+      */}
+      <section className={`mx-auto ${CONTENT_W} px-3 pt-[9vh] ${leadsWithText ? "" : "pb-[9vh]"}`}>
+        <p className={`${PROSE_W} ${PROSE_TEXT}`}>{project.description}</p>
       </section>
 
       {/* 4. 이미지 그리드 — 블록 크기를 섞어 강약을 준다 (ProjectGallery 참고) */}
