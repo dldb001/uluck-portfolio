@@ -487,21 +487,74 @@ const KBS_DIR = "/images/projects/14_KBS NEWS OAP";
  *
  * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
  *   1_thumbnail  원본이 이미 900x1200(3:4)이라 크기 변화 없이 q95 JPG로만 바뀐다
- *   2_page       q92 — 본문(1~20)은 전부 1920x1080이라 폭 그대로, 히어로만 원본 폭 3840
+ *   2_page       q92 — 스타일프레임(1~20)은 전부 1920x1080이라 폭 그대로, 기기 목업(0)과
+ *                 히어로만 원본 폭 3840
  *
- * 히어로만 따로 뽑은 건 3.06:1 파노라마가 100vw로 그려지기 때문이다. 본문은 16:9뿐이라
- * 파노라마 판정(2:1 이상)에 걸리는 장이 없다.
+ * 0과 히어로를 따로 뽑은 건 둘 다 파노라마(2.87:1 · 3.06:1)라 한 행을 통째로 쓰기 때문이다.
  * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
  */
 const kbsFrames = ["hero", "1", "2", "3", "4"].map(
   (n) => `${KBS_DIR}/1_thumbnail/optimized/${n}.jpg`,
 );
 
-/** 2_page는 hero를 뺀 1~20이 본문이다 */
-const kbsGallery: GalleryImage[] = Array.from({ length: 20 }, (_, i) => `${i + 1}`).map((n) => ({
+/** 2_page/optimized 한 장 — 크기는 manifest에서 온다 */
+const kbsImage = (n: number): GalleryImage => ({
   src: `${KBS_DIR}/2_page/optimized/${n}.jpg`,
   ...kbsPageManifest[`${n}.jpg` as keyof typeof kbsPageManifest],
-}));
+});
+
+/**
+ * 한 편성의 스타일프레임 묶음 — 3장씩 한 행으로 끊는다.
+ *
+ * 행을 직접 지정하므로(GalleryRow) 배치가 알아서 묶는 대신 항상 3열이다. 마지막에 한 장이
+ * 남으면 행으로 묶지 않고 낱장으로 둔다 — natural 배치에서 16:9(1.78)는 한 행을 통째로
+ * 쓰는 기준(NATURAL_SOLO_RATIO)을 넘으므로, 3열 영역의 전체 폭을 꽉 채워 크게 놓인다.
+ */
+function kbsSet(from: number, to: number): GalleryItem[] {
+  const images = Array.from({ length: to - from + 1 }, (_, i) => kbsImage(from + i));
+  const items: GalleryItem[] = [];
+
+  for (let i = 0; i < images.length; i += 3) {
+    const row = images.slice(i, i + 3);
+    items.push(row.length === 1 ? row[0] : { row });
+  }
+
+  return items;
+}
+
+/**
+ * 상세 페이지 본문 — 기기 목업(0) 아래로 편성 셋이 [문단 → 스타일프레임] 순서로 이어진다.
+ *
+ * 0은 2.87:1이라 natural 배치에서 자기 행을 통째로 쓴다 (뉴스라인 · 7 · 뉴스특보를 한 장에
+ * 담은 그림이라 본문 맨 위에 크게 둔다). 1~7이 뉴스라인, 8~14가 숫자 7, 15~20이 뉴스특보다.
+ */
+const kbsGallery: GalleryItem[] = [
+  kbsImage(0),
+  // 줄바꿈 지점은 정해진 대로다 — "\n"이 그 자리에서 줄을 나눈다 (GalleryText 참고)
+  {
+    text:
+      "뉴스라인은 세계의 소식을 전하는 편성입니다.\n" +
+      "빛의 라인이 원을 그리며 생겨나고, 두 원이 겹치는 자리에서\n" +
+      "지구가 떠오릅니다. 지구를 이루던 맵이 입체적으로\n" +
+      "분해되며 회전하고 뉴스라인 타이틀의 빛으로 정립됩니다.",
+  },
+  ...kbsSet(1, 7),
+  {
+    text:
+      "빛의 라인이 7의 형상을 그리다가,\n" +
+      "모서리가 위로 솟으며 입체로 돌출됩니다.\n" +
+      "한 바퀴 회전하는 사이 숫자 7이 완성됩니다.",
+  },
+  ...kbsSet(8, 14),
+  {
+    text:
+      "뉴스특보는 예고 없이 전해지는 긴급 편성입니다.\n" +
+      "빛이 화면 중앙에서 퍼져 주변을 비추고,\n" +
+      "두 갈래가 함께 돌다 하나로 합쳐지며 화면 전체로 번집니다.\n" +
+      "소식이 세상에 닿는 순간을 빛의 확산으로 표현했습니다.",
+  },
+  ...kbsSet(15, 20),
+];
 
 const COLLOQUIUM_DIR = "/images/projects/15_Naver Colloquium 2022";
 
@@ -826,8 +879,9 @@ export const projects: Project[] = [
     thumbnails: kbsFrames,
     hero: `${KBS_DIR}/2_page/optimized/hero.jpg`,
     gallery: kbsGallery,
-    // 본문 20장이 전부 16:9라 강약을 주는 기본 배치보다 3장씩 규칙적으로 놓는 편이 낫다 (LG와 같다)
-    galleryLayout: "trio",
+    // 행을 직접 짠다(kbsSet) — 편성마다 3열로 놓고 남는 한 장은 폭을 꽉 채우는 배치라
+    // 자기 규칙으로 묶는 trio 대신 행 지정을 지키는 natural을 쓴다
+    galleryLayout: "natural",
     category: ["3D", "MOTIONGRAPHIC"],
     href: "/work/kbs-news-oap",  },
   {
