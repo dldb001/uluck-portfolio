@@ -1,6 +1,13 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import { isGalleryText, type GalleryImage, type GalleryItem, type GalleryLayout } from "@/lib/types";
+import {
+  isGalleryRow,
+  isGalleryText,
+  type GalleryImage,
+  type GalleryItem,
+  type GalleryLayout,
+  type GalleryRow,
+} from "@/lib/types";
 import { BODY_TEXT, PROSE_W } from "@/lib/styles";
 
 /**
@@ -161,6 +168,43 @@ function TrioGallery({ images }: { images: GalleryImage[] }) {
   );
 }
 
+/**
+ * 직접 지정한 행(GalleryRow) 하나 — 칸 폭이 모두 같아 높이도 저절로 맞는다.
+ *
+ * 비율은 첫 장의 원본 비율을 행 전체가 나눠 쓴다. 같은 비율끼리 묶으면 object-cover가 잘라낼
+ * 게 없고, 다른 비율이 섞인 경우에만 그 장의 가장자리가 잘린다. 열 수는 장수를 그대로 따르므로
+ * (2장 → 2열, 3장 → 3열) Tailwind의 grid-cols-* 대신 인라인 스타일로 넘긴다 — 클래스명을
+ * 문자열로 조합하면 Tailwind가 빌드 때 찾지 못해 스타일이 빠진다.
+ *
+ * 칸 사이 여백은 기본 배치의 3열 블록과 같은 값을 쓴다.
+ */
+function FixedRow({ images }: { images: GalleryImage[] }) {
+  const sized = images.find((img) => img.width && img.height);
+  const aspectRatio = sized ? `${sized.width} / ${sized.height}` : "1 / 1";
+
+  return (
+    <div
+      className="grid gap-3 md:gap-4"
+      style={{ gridTemplateColumns: `repeat(${images.length}, minmax(0, 1fr))` }}
+    >
+      {images.map((img, i) => (
+        <Frame key={i} img={img} className="w-full" style={{ aspectRatio }} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * 직접 지정한 행을 낱장으로 푼다.
+ *
+ * rhythm·trio는 자기 규칙으로 이미지를 묶기 때문에 행 지정을 지킬 자리가 없다. 무시하고
+ * 흘려보내는 대신 여기서 명시적으로 펼쳐서, 행을 섞어 둔 프로젝트가 배치를 바꿔도
+ * 이미지가 사라지지 않게 한다.
+ */
+function flattenRows(items: (GalleryImage | GalleryRow)[]): GalleryImage[] {
+  return items.flatMap((item) => (isGalleryRow(item) ? item.row : item));
+}
+
 /** 원본 비율을 지키는 배치에서 한 장이 차지할 수 있는 최대 높이 */
 /**
  * 이 비율(가로 ÷ 세로) 이상이면 짝을 짓지 않고 한 행을 통째로 쓴다.
@@ -227,57 +271,72 @@ function NaturalImage({ img, sizes }: { img: GalleryImage; sizes: string }) {
  * 크기를 맞추려면 잘라야 하므로 여기서는 안 자르는 쪽을 택한다.
  *
  * 짝이 홀수로 남으면 마지막 한 장이 왼쪽 칸에 혼자 놓인다.
+ *
+ * 이 자동 판정이 원하는 모양을 못 만들 때는 GalleryRow로 행을 직접 짜서 섞으면 된다.
+ * 그 행은 비율과 무관하게 지정한 장수 그대로 한 행이 되고, 칸 폭이 같아 높이도 맞는다
+ * (FixedRow 참고 — 대신 그 행만 틀에 맞춰 object-cover로 잘린다).
  */
-function NaturalGallery({ images }: { images: GalleryImage[] }) {
-  const rows: { solo: boolean; images: GalleryImage[] }[] = [];
+function NaturalGallery({ items }: { items: (GalleryImage | GalleryRow)[] }) {
+  const rows: { kind: "solo" | "pair" | "fixed"; images: GalleryImage[] }[] = [];
 
-  for (const img of images) {
-    const ratio = img.width && img.height ? img.width / img.height : 0;
+  for (const item of items) {
+    // 직접 지정한 행 — 자동 판정을 건너뛰고 그대로 한 행이 된다
+    if (isGalleryRow(item)) {
+      rows.push({ kind: "fixed", images: item.row });
+      continue;
+    }
+
+    const ratio = item.width && item.height ? item.width / item.height : 0;
 
     if (ratio >= NATURAL_SOLO_RATIO) {
-      rows.push({ solo: true, images: [img] });
+      rows.push({ kind: "solo", images: [item] });
       continue;
     }
 
     const open = rows[rows.length - 1];
     // 직전 행이 아직 한 장짜리 짝 행이면 거기에 채운다
-    if (open && !open.solo && open.images.length < 2) open.images.push(img);
-    else rows.push({ solo: false, images: [img] });
+    if (open && open.kind === "pair" && open.images.length < 2) open.images.push(item);
+    else rows.push({ kind: "pair", images: [item] });
   }
 
   return (
     <div className="flex flex-col gap-[4vh]">
-      {rows.map((row, i) =>
-        row.solo ? (
-          <NaturalImage
-            key={i}
-            img={row.images[0]}
-            // 본문 컨테이너 폭과 같은 식 (Frame과 동일)
-            sizes="(max-width: 768px) 100vw, calc((100vw + 72rem)/2)"
-          />
-        ) : (
+      {rows.map((row, i) => {
+        if (row.kind === "fixed") return <FixedRow key={i} images={row.images} />;
+
+        if (row.kind === "solo") {
+          return (
+            <NaturalImage
+              key={i}
+              img={row.images[0]}
+              // 본문 컨테이너 폭과 같은 식 (Frame과 동일)
+              sizes="(max-width: 768px) 100vw, calc((100vw + 72rem)/2)"
+            />
+          );
+        }
+
+        return (
           <div key={i} className="grid grid-cols-2 items-center gap-2 md:gap-3">
             {row.images.map((img, j) => (
-              <NaturalImage
-                key={j}
-                img={img}
-                    sizes="(max-width: 768px) 50vw, 45vw"
-              />
+              <NaturalImage key={j} img={img} sizes="(max-width: 768px) 50vw, 45vw" />
             ))}
           </div>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 }
 
 /**
- * 이미지 목록을 문단 경계로 나눈다 — [이미지들] 문단 [이미지들] ... 순서를 그대로 보존한다.
- * 문단이 없으면 이미지 묶음 하나뿐이다.
+ * 항목 목록을 문단 경계로 나눈다 — [이미지들] 문단 [이미지들] ... 순서를 그대로 보존한다.
+ * 문단이 없으면 이미지 묶음 하나뿐이다. 직접 지정한 행(GalleryRow)은 경계가 아니라
+ * 이미지 묶음 안에 그대로 들어간다 — 행을 어떻게 다룰지는 배치가 정한다.
  */
 function toSegments(items: GalleryItem[]) {
-  const segments: ({ kind: "images"; images: GalleryImage[] } | { kind: "text"; text: string })[] =
-    [];
+  const segments: (
+    | { kind: "images"; items: (GalleryImage | GalleryRow)[] }
+    | { kind: "text"; text: string }
+  )[] = [];
 
   for (const item of items) {
     if (isGalleryText(item)) {
@@ -285,8 +344,8 @@ function toSegments(items: GalleryItem[]) {
       continue;
     }
     const open = segments[segments.length - 1];
-    if (open && open.kind === "images") open.images.push(item);
-    else segments.push({ kind: "images", images: [item] });
+    if (open && open.kind === "images") open.items.push(item);
+    else segments.push({ kind: "images", items: [item] });
   }
 
   return segments;
@@ -327,7 +386,7 @@ export default function ProjectGallery({
             <Paragraph key={i} text={seg.text} first={i === 0} />
           ) : (
             <div key={i} className={i === segments.length - 1 ? "" : "mb-[6vh]"}>
-              <ProjectGallery images={seg.images} layout={layout} />
+              <ProjectGallery images={seg.items} layout={layout} />
             </div>
           ),
         )}
@@ -337,10 +396,13 @@ export default function ProjectGallery({
 
   const only = segments[0];
   if (!only || only.kind !== "images") return null;
-  const plain = only.images;
+
+  if (layout === "natural") return <NaturalGallery items={only.items} />;
+
+  // rhythm·trio는 자기 규칙으로 묶으므로 직접 지정한 행은 낱장으로 풀어 넘긴다
+  const plain = flattenRows(only.items);
 
   if (layout === "trio") return <TrioGallery images={plain} />;
-  if (layout === "natural") return <NaturalGallery images={plain} />;
 
   const blocks = toBlocks(plain);
   const gap = "gap-4 md:gap-6";

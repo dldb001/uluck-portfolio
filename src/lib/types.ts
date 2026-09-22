@@ -37,13 +37,30 @@ export interface GalleryText {
 }
 
 /**
- * 본문 그리드의 항목 하나 — 이미지 또는 문단.
+ * 한 행에 나란히 놓을 이미지 묶음 — 배치를 자동 판정에 맡기지 않고 직접 지정할 때 쓴다.
+ * (natural 배치에서만 의미가 있다 — rhythm·trio는 자기 규칙으로 묶으므로 낱장으로 풀린다)
+ *
+ * 칸 폭이 모두 같고 행 전체가 하나의 비율을 공유하므로 높이도 저절로 맞는다. 장수 제한은
+ * 없다 — 2장이면 2열, 3장이면 3열이다. 행의 비율은 첫 장의 원본 비율(manifest)을 쓰고 각 칸은
+ * object-cover로 채우므로, 같은 비율끼리 묶으면 아무 데도 잘리지 않고 다른 비율이 섞인
+ * 경우에만 그 장의 가장자리가 잘린다.
+ */
+export interface GalleryRow {
+  row: GalleryImage[];
+}
+
+/**
+ * 본문 그리드의 항목 하나 — 이미지 · 문단 · 직접 지정한 행.
  * 문단은 이미지 흐름을 끊는 경계가 된다: 앞뒤 이미지들은 각각 따로 배치되고 그 사이에 글이 선다.
  */
-export type GalleryItem = GalleryImage | GalleryText;
+export type GalleryItem = GalleryImage | GalleryText | GalleryRow;
 
 export function isGalleryText(item: GalleryItem): item is GalleryText {
   return "text" in item;
+}
+
+export function isGalleryRow(item: GalleryItem): item is GalleryRow {
+  return "row" in item;
 }
 
 /**
@@ -54,7 +71,7 @@ export function isGalleryText(item: GalleryItem): item is GalleryText {
  *   장수가 많을 때, 리듬을 주는 대신 규칙적으로 늘어놓는 편이 나은 경우에 쓴다.
  * - natural: 원본 비율 그대로 한 장씩 세로로 쌓는다. 위 둘은 정해진 틀에 object-cover로
  *   채워 넣어 가장자리가 잘리는데, 잘리면 안 되는 이미지(세로·정사각이 섞였거나 화면 전체가
- *   내용인 경우)를 위한 배치다.
+ *   내용인 경우)를 위한 배치다. 자동 판정 대신 행을 직접 짜고 싶으면 GalleryRow를 섞어 쓴다.
  */
 export type GalleryLayout = "rhythm" | "trio" | "natural";
 

@@ -2,6 +2,9 @@
 import samsungPageManifest from "../../public/images/projects/1_Samsung Browser/2_page/optimized/manifest.json";
 import dellPageManifest from "../../public/images/projects/5_Dell_BG_S/2_page/optimized/manifest.json";
 import dellColorPageManifest from "../../public/images/projects/4_Dell_BG_color/2_page/optimized/manifest.json";
+import naverPageManifest from "../../public/images/projects/3_Naver_Fall series ICON/2_page/optimized/manifest.json";
+import samsungStPageManifest from "../../public/images/projects/6_Samsung_ST/2_page/optimized/manifest.json";
+import galaxyWatchPageManifest from "../../public/images/projects/2_Galaxy watch ICON/2_page/optimized/manifest.json";
 import luckyPageManifest from "../../public/images/projects/7_Lucky Spectrum/2_page/optimized/manifest.json";
 import gardenPageManifest from "../../public/images/projects/8_Lucky Garden/2_page/optimized/manifest.json";
 import lottePageManifest from "../../public/images/projects/9_LOTTE Dept. Nowon VP Film/2_page/optimized/manifest.json";
@@ -132,11 +135,15 @@ const dellColorGallery: GalleryImage[] = ["1", "2", "3", "4", "5", "7"].map((n) 
 const NAVER_DIR = "/images/projects/3_Naver_Fall series ICON";
 
 /**
- * NAVER — 아직 썸네일(1_thumbnail)만 있고 2_page가 없다.
+ * NAVER — 썸네일과 2_page가 모두 있다. `hero`가 카드 대표 이미지 / 상세 히어로다.
  *
- * 그래서 hero / gallery 필드를 아예 두지 않는다. 상세 페이지가 hero는 thumbnail로 대체하고
- * gallery는 thumbnail 반복으로 자리만 잡아 주므로(work/[id]/page.tsx 참고) 임시 화면이 된다.
- * 2_page가 준비되면 DELL처럼 optimized/ + manifest를 만들어 두 필드를 채우면 된다.
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  900x1200(3:4) q95 — 카드 최대 408px(레티나 816px)보다 크므로 축소 없이 그대로
+ *   2_page       q92 — 본문 아이콘은 1920px 상한, 파노라마 3장만 원본 폭 그대로
+ *                (hero 5667, 스케치 시트 1.jpg와 라인업 시트 2.jpg 4000)
+ *
+ * 파노라마를 줄이지 않은 건 다른 프로젝트와 같은 이유다. 히어로는 100vw, 나머지 둘은
+ * 컨테이너 전체 폭으로 그려져 1920px으로 맞추면 레티나에서 눈에 띄게 흐려진다.
  *
  * 폴더명에 공백이 있지만 next/image가 src를 인코딩하므로 그대로 적는다.
  */
@@ -144,18 +151,51 @@ const naverFrames = ["hero", "1", "2", "3"].map(
   (n) => `${NAVER_DIR}/1_thumbnail/optimized/${n}.jpg`,
 );
 
+/**
+ * 상세 페이지 본문 — 문단 · 스케치 시트(1) · 라인업 시트(2) · 아이콘 낱장(5~10) 순서다.
+ * 2_page에는 3·4가 없어 번호가 1·2, 5~10으로 이어진다 — 범위로 만들지 않고 그대로 적는다.
+ *
+ * 1은 원래 이 폴더의 히어로였다(스케치 3컷 → 완성 아이콘 1컷). 히어로가 웜톤 카드 키비주얼로
+ * 교체되면서 본문 첫 장으로 내려왔다 — 새 hero.png와 겹치는 그림이 아니다.
+ *
+ * galleryLayout이 "natural"인 이유: 본문 낱장이 전부 1:1 정사각 아이콘이다. 기본(rhythm)
+ * 배치는 16:9 · 4:3 · 3:4 고정 틀에 object-cover로 채워 넣어서, 정사각을 16:9에 넣으면
+ * 위아래 44%가 잘려 아이콘 자체가 날아간다. natural은 틀 없이 manifest의 원본 비율로
+ * 자리를 잡아 어디도 자르지 않는다 — 가로로 긴 시트 두 장(1은 3.10:1, 2는 2.04:1)은
+ * 각자 한 행을 통째로 쓰고(NATURAL_SOLO_RATIO 1.2 이상), 정사각 6장은 2열로 짝지어 놓인다.
+ *
+ * 5와 6은 같은 한글날 아이콘의 배경 변형이다(5=그린 그라디언트, 6=흰 배경). 의도된 두 컷이라
+ * 나란히 둔다 — 중복으로 보고 하나를 빼지 말 것.
+ *
+ * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
+ */
+const naverGallery: GalleryItem[] = [
+  // 줄바꿈 지점은 정해진 대로다 — "\n"이 그 자리에서 줄을 나눈다 (GalleryText 참고)
+  {
+    text:
+      "'네이버 가을 시리즈 아이콘'은 서비스 내부에서 포인트 요소로 많이 활용되는 만큼, 디자인의 아트웍적인 측면을 한층 강조했습니다.\n" +
+      "가을에 어울리는 웜톤 컬러칩과 우드 텍스처를 활용해 은은한 계절감을 전달하며, 핵심 오브젝트를 기하학적으로 디자인해 시각적 완성도와 내용의 명확성을 동시에 높였습니다.",
+  },
+  ...["1", "2", "5", "6", "7", "8", "9", "10"].map((n) => ({
+    src: `${NAVER_DIR}/2_page/optimized/${n}.jpg`,
+    ...naverPageManifest[`${n}.jpg` as keyof typeof naverPageManifest],
+  })),
+];
+
 const GALAXY_WATCH_DIR = "/images/projects/2_Galaxy watch ICON";
 
 /**
- * Galaxy Watch ICON — NAVER · Samsung ST와 같은 상태다. 썸네일만 있고 2_page가 아직 없어
- * hero / gallery 필드를 두지 않는다. 상세 페이지가 hero는 thumbnail로 대체하고 gallery는
- * thumbnail 반복으로 자리만 잡아 주므로(work/[id]/page.tsx 참고) 임시 화면이 된다.
- * 2_page가 준비되면 DELL처럼 optimized/ + manifest를 만들어 두 필드를 채우면 된다.
+ * Galaxy Watch ICON — 썸네일과 2_page가 모두 있다. `hero`가 카드 대표 이미지 / 상세 히어로다.
  *
- * 원본은 1_thumbnail/*.png이고 여기서 쓰는 건 optimized/ 쪽이다:
- *   1~5     1875x2500(3:4) → 900x1200 q95
- *   hero    원본이 이미 900x1200이라 크기 변화 없이 JPG로만 바뀐다
- * 카드 최대 408px(레티나 816px)보다 크므로 축소 없이 그대로 쓴다.
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
+ *   1_thumbnail  1~5는 1875x2500(3:4) → 900x1200 q95, hero는 원본이 이미 900x1200이라
+ *                크기 변화 없이 JPG로만 바뀐다 (카드 최대 408px, 레티나 816px보다 크므로 그대로)
+ *   2_page       q92 — 네 장 모두 원본 폭 4000 그대로 (아래 참고)
+ *
+ * 2_page를 1920px으로 줄이지 않은 건 네 장 전부가 화면·컨테이너 폭을 꽉 채우기 때문이다.
+ * 히어로는 100vw이고, 본문 세 장은 natural 배치에서 각자 한 행을 통째로 쓴다(컨테이너 전체 폭,
+ * 1920px 화면에서 1536px → 레티나 3072px). 게다가 셋 다 작은 설명문이 들어간 시트라
+ * 1920px으로 맞추면 글자가 눈에 띄게 뭉개진다. 늘어나는 용량은 세 장 합쳐 700KB 정도다.
  *
  * 폴더 루트의 hero.psd는 일러스트 원본이라 최적화 대상에서 빠진다(스크립트가 png/jpg 계열만 읽는다).
  *
@@ -165,23 +205,99 @@ const galaxyWatchFrames = ["hero", "1", "2", "3", "4", "5"].map(
   (n) => `${GALAXY_WATCH_DIR}/1_thumbnail/optimized/${n}.jpg`,
 );
 
+/**
+ * 상세 페이지 본문 — 문단 · Grid 시트(1) · Mission 시트(2) · 최종 아이콘 8종(3) 순서다.
+ * 2_page는 hero를 뺀 1~3이 본문이고 빠진 번호가 없다.
+ *
+ * galleryLayout이 "natural"인 이유는 앞의 두 아이콘 프로젝트와 다르다. 여기는 본문 세 장이
+ * 전부 정확히 16:9라 비율이 섞여 있지 않다. 문제는 기본(rhythm) 배치의 순서다 —
+ * full(16:9) 다음이 duo(4:3)라 1만 맞고 2·3은 4:3 틀에서 좌우 25%가 잘린다. 세 장 다
+ * 텍스트와 아이콘이 가장자리까지 차 있는 설명 시트여서 1의 우측 아이콘 열, 3의 BO·CT 열이
+ * 날아가고, 반 칸 폭이라 시트 안 설명문도 읽히지 않는다. natural은 세 장을 원본 비율
+ * 그대로 한 행씩 쌓아 잘림 없이 가장 큰 크기로 보여준다.
+ *
+ * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
+ */
+const galaxyWatchGallery: GalleryItem[] = [
+  // 줄바꿈 지점은 정해진 대로다 — "\n"이 그 자리에서 줄을 나눈다 (GalleryText 참고).
+  // 빈 줄은 "\n\n" — 앞 두 줄과 마지막 줄 사이를 한 줄 띄우는 것까지 원문 그대로다.
+  {
+    text:
+      "갤럭시 워치는 삼성의 대표 웨어러블 제품입니다.\n" +
+      "손목 위의 작은 스크린에서 빠르고 효율적으로 정보를 전달해야 하기 때문에,\n\n" +
+      "명료성, 직관성, 가시성에 초점을 두어 디자인하였습니다.",
+  },
+  ...["1", "2", "3"].map((n) => ({
+    src: `${GALAXY_WATCH_DIR}/2_page/optimized/${n}.jpg`,
+    ...galaxyWatchPageManifest[`${n}.jpg` as keyof typeof galaxyWatchPageManifest],
+  })),
+];
+
 const SAMSUNG_ST_DIR = "/images/projects/6_Samsung_ST";
 
 /**
- * Samsung ST — NAVER와 같은 상태다. 썸네일만 있고 2_page가 아직 없어 hero / gallery 필드를 두지 않는다.
- * 상세 페이지가 hero는 thumbnail로 대체하고 gallery는 thumbnail 반복으로 자리만 잡아 주므로
- * (work/[id]/page.tsx 참고) 임시 화면이 된다. 2_page가 준비되면 DELL처럼 optimized/ + manifest를
- * 만들어 두 필드를 채우면 된다.
+ * Samsung ST — 썸네일과 2_page가 모두 있다. `hero`가 카드 대표 이미지 / 상세 히어로다.
  *
- * 원본은 1875x2500 PNG(정확히 3:4)이고 여기서 쓰는 건 optimized/ 쪽이다:
+ * 원본은 손대지 않고 optimized/ 쪽만 쓴다:
  *   1_Thumbnail  900x1200(3:4) q95 — 카드 최대 408px(레티나 816px)보다 크므로 축소 없이 그대로
+ *   2_page       q92 — 본문은 1920px 상한, 파노라마 2장만 원본 폭 그대로
+ *                (hero 6241, 기능 3단 시트 3.jpg 4000)
  *
- * 주의: 폴더명이 `1_Thumbnail`로, 다른 프로젝트의 `1_thumbnail`과 T의 대소문자가 다르다.
- * Windows는 구분하지 않지만 배포되는 Linux는 구분하므로 폴더명을 바꾸면 여기도 같이 고쳐야 한다.
+ * 파노라마를 줄이지 않은 건 다른 프로젝트와 같은 이유다. 히어로는 100vw, 기능 3단 시트는
+ * 컨테이너 전체 폭으로 그려져 1920px으로 맞추면 레티나에서 눈에 띄게 흐려진다.
+ *
+ * 주의: 대소문자가 두 군데서 어긋나 있다. 둘 다 Windows는 구분하지 않지만 배포되는 Linux는
+ * 구분하므로, 파일을 다시 뽑거나 폴더를 옮길 때 이름이 틀어지지 않게 확인해야 한다.
+ *   - 썸네일 폴더명이 `1_Thumbnail`로, 다른 프로젝트의 `1_thumbnail`과 T가 다르다 (2_page는 같다)
+ *   - 2_page 원본 히어로 파일명이 `HERO.png`다. optimize-images.mjs는 원본 이름을 그대로
+ *     따라가므로 `HERO.jpg`가 나오는데, 다른 프로젝트와 맞추려고 `hero.jpg`로 바꿔 두었다
+ *     (manifest 키도 같이 고쳤다). 이 폴더를 다시 뽑으면 `HERO.jpg`가 되살아나므로
+ *     그때마다 소문자로 되돌려야 한다.
  */
 const samsungStFrames = ["hero", "1", "2", "3", "4"].map(
   (n) => `${SAMSUNG_ST_DIR}/1_Thumbnail/optimized/${n}.jpg`,
 );
+
+/**
+ * 상세 페이지 본문 — 문단 · 라인업 시트(2) · 기능 3단(3) · 아이콘 낱장(4~8) ·
+ * OOBE 일러스트(9~11) 순서다.
+ *
+ * 1(앱 목업)은 일부러 뺐다. 2_page/1.png와 optimized/1.jpg는 그대로 두었으니 다시 넣으려면
+ * 아래 배열 맨 앞에 "1"을 되돌리면 된다 — 파일이 없어서 빠진 게 아니므로 지우지 말 것.
+ *
+ * galleryLayout이 "natural"인 이유는 Naver Fall series와 같지만 사정이 조금 다르다. 여기는
+ * 본문 비율이 16:9(2) · 2.11:1(3) · 1:1(4~8) · 4:3(9~11) 네 종류로 섞여 있다.
+ * 기본(rhythm) 배치는 고정 틀에 object-cover로 채우므로 틀과 다른 비율은 잘려 나간다 —
+ * 정사각 아이콘이 16:9 틀에 들어가면 상하 44%가 날아간다. natural은 틀 없이 manifest의
+ * 원본 비율로 자리를 잡아 어디도 자르지 않는다.
+ *
+ * 2·3은 natural의 자동 판정에 맡긴다 — 둘 다 가로가 길어(1.2 이상) 각자 한 행을 통째로 쓴다.
+ * 4부터는 자동 판정 대신 GalleryRow로 행을 직접 짠다:
+ *   4·5·6     3열   (전부 1500x1500)
+ *   7·8       2열   (전부 1250x1250)
+ *   9·10·11   3열   (전부 1280x960)
+ * 세 행 모두 안에서 비율이 같아서, 칸 폭을 맞추면 높이도 같아지고 잘려 나가는 데가 없다
+ * (행 안에 다른 비율을 섞으면 그 장만 object-cover로 잘린다 — FixedRow 참고).
+ *
+ * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
+ */
+const stPage = (n: string) => ({
+  src: `${SAMSUNG_ST_DIR}/2_page/optimized/${n}.jpg`,
+  ...samsungStPageManifest[`${n}.jpg` as keyof typeof samsungStPageManifest],
+});
+
+const samsungStGallery: GalleryItem[] = [
+  // 줄바꿈 지점은 정해진 대로다 — "\n"이 그 자리에서 줄을 나눈다 (GalleryText 참고)
+  {
+    text:
+      "삼성 스마트싱스 아이콘 시리즈는 모바일 앱 환경에서 주로 활용되는 특성을 고려해, 명확한 아웃라인과 형태감이 한눈에 읽히도록 디자인되었습니다.\n" +
+      "아울러 스마트싱스 앱 특유의 스마트하고 직관적인 성격을 담아내기 위해, 적절한 엣지가 살아있는 라운딩 처리와 함께 삼성 고유의 블루 컬러를 포인트 요소로 적극 활용했습니다.",
+  },
+  ...["2", "3"].map(stPage),
+  { row: ["4", "5", "6"].map(stPage) },
+  { row: ["7", "8"].map(stPage) },
+  { row: ["9", "10", "11"].map(stPage) },
+];
 
 const LUCKY_DIR = "/images/projects/7_Lucky Spectrum";
 
@@ -538,7 +654,10 @@ export const projects: Project[] = [
       "네이버 서비스 안에서 포인트로 쓰이는 아이콘들을, 가을의 계절감을 담아서 디자인했습니다.",
     thumbnail: naverFrames[0],
     thumbnails: naverFrames,
-    // hero / gallery 없음 — 2_page가 준비되기 전까지 상세 페이지는 썸네일로 자리만 잡는다
+    hero: `${NAVER_DIR}/2_page/optimized/hero.jpg`,
+    gallery: naverGallery,
+    // 본문이 전부 정사각 아이콘이라 잘리지 않는 배치를 쓴다 (naverGallery 주석 참고)
+    galleryLayout: "natural",
     category: ["UI", "3D"],
     href: "/work/naver-fall-series-icon",  },
   {
@@ -551,7 +670,10 @@ export const projects: Project[] = [
       "삼성 스마트싱스 앱 환경에서 한눈에 읽히도록, 명확한 아웃라인과 삼성 블루를 포인트 컬러로 아이콘과 OOBE 세트를 디자인했습니다.",
     thumbnail: samsungStFrames[0],
     thumbnails: samsungStFrames,
-    // hero / gallery 없음 — 2_page가 준비되기 전까지 상세 페이지는 썸네일로 자리만 잡는다
+    hero: `${SAMSUNG_ST_DIR}/2_page/optimized/hero.jpg`,
+    gallery: samsungStGallery,
+    // 본문 비율이 네 종류로 섞여 있어 잘리지 않는 배치를 쓴다 (samsungStGallery 주석 참고)
+    galleryLayout: "natural",
     category: ["UI", "3D"],
     href: "/work/samsung-st",  },
   {
@@ -564,7 +686,10 @@ export const projects: Project[] = [
       "손목 위 작은 스크린이라는 조건에 맞춰, 갤럭시 워치를 위한 헬스 기능 아이콘 세트를 디자인했습니다.",
     thumbnail: galaxyWatchFrames[0],
     thumbnails: galaxyWatchFrames,
-    // hero / gallery 없음 — 2_page가 준비되기 전까지 상세 페이지는 썸네일로 자리만 잡는다
+    hero: `${GALAXY_WATCH_DIR}/2_page/optimized/hero.jpg`,
+    gallery: galaxyWatchGallery,
+    // 본문 세 장이 잘리면 안 되는 설명 시트라 잘리지 않는 배치를 쓴다 (galaxyWatchGallery 주석 참고)
+    galleryLayout: "natural",
     category: ["UI", "3D"],
     href: "/work/galaxy-watch-icon",  },
   {
