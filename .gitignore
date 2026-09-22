@@ -58,3 +58,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 일러스트레이터 작업 원본 — 저장소 밖에 둔다 (한 파일이 수백 MB이고 서비스되지 않는다).
+# public/images/projects/ 안쪽은 위 원본 제외 규칙이 이미 잡고 있어 여기서는 루트만 본다.
+/*.ai
+~ai-*.tmp
