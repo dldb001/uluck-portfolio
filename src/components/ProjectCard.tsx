@@ -40,6 +40,28 @@ type Props = {
   isDimmed?: boolean;
   /** 드래그 여부 판단 후 라우팅 (5단계에서 그리드가 주입) */
   onActivate?: (project: Project) => void;
+  /** 그리드가 화면에 들어와 카드들이 나타날 차례인지 — false인 동안은 숨어서 기다린다 */
+  revealed?: boolean;
+  /** 나타날 때 기다리는 시간(초) — 그리드가 순서대로 매겨 차례차례 올라오게 한다 */
+  enterDelay?: number;
+};
+
+/** 카드 자리 이동(필터 재배열) 스프링 — 등장 · 퇴장 variant에도 같이 실어야 덮어써지지 않는다 */
+const LAYOUT_SPRING = { type: "spring", stiffness: 320, damping: 34 } as const;
+
+/**
+ * 등장 · 퇴장 모습.
+ * show의 delay는 custom(enterDelay)으로 받는다 — 그리드가 왼쪽부터 순번을 매겨 준다.
+ * 이미 나타나 있는 카드는 variant가 그대로 show라 delay가 바뀌어도 다시 재생되지 않는다.
+ */
+const CARD_VARIANTS = {
+  hidden: { opacity: 0, y: 16 },
+  show: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { layout: LAYOUT_SPRING, duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] },
+  }),
+  exit: { opacity: 0, y: 12, transition: { layout: LAYOUT_SPRING, duration: 0.25 } },
 };
 
 export default function ProjectCard({
@@ -47,6 +69,8 @@ export default function ProjectCard({
   isHovered = false,
   isDimmed = false,
   onActivate,
+  revealed = true,
+  enterDelay = 0,
 }: Props) {
   // 호버 대상은 살짝 커지고 나머지는 같이 작아진다 — 그리드 전체가 하나의 상태를 공유
   const scale = isHovered ? "scale-[1.05]" : isDimmed ? "scale-[0.95]" : "scale-100";
@@ -95,14 +119,12 @@ export default function ProjectCard({
   return (
     <motion.article
       layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 12 }}
-      transition={{
-        layout: { type: "spring", stiffness: 320, damping: 34 },
-        opacity: { duration: 0.25 },
-        y: { duration: 0.25 },
-      }}
+      variants={CARD_VARIANTS}
+      custom={enterDelay}
+      initial="hidden"
+      animate={revealed ? "show" : "hidden"}
+      exit="exit"
+      transition={{ layout: LAYOUT_SPRING }}
       // 그리드가 이 요소의 사각형으로 hover 대상을 판정한다 (ProjectGrid의 hitTest 참고).
       // scale이 걸리는 안쪽 박스가 아니라 이 레이아웃 박스가 기준이어야 판정이 흔들리지 않는다.
       data-card-id={project.id}

@@ -7,6 +7,7 @@ import {
   AnimatePresence,
   LayoutGroup,
   motion,
+  useInView,
   useMotionValue,
   useMotionValueEvent,
 } from "framer-motion";
@@ -60,10 +61,18 @@ const WHEEL_TAU = 160;
 const WHEEL_EPSILON = 0.5;
 
 /**
+ * 카드가 차례로 나타날 때 한 장마다 늦추는 시간(초).
+ * 20장이면 마지막 카드가 0.95초에 출발해 0.5초 뒤(ProjectCard의 등장 시간) 끝난다 — 전체 약 1.45초.
+ * 화면에 실제로 보이는 건 앞쪽 몇 장이라 체감은 그보다 짧다.
+ */
+const STAGGER = 0.05;
+
+/**
  * 가로로 길게 배치된 카드들 — 화면 밖으로 넘쳐 잘려서 시작/끝난다.
  * - 마우스로 잡고 좌우 드래그하면 횡스크롤 (drag="x" + dragConstraints)
  * - 휠을 굴려도 같은 방향으로 움직인다 (아래 = 다음 카드) — 경계·관성은 드래그와 공유
  * - 필터링 시 layout + AnimatePresence로 부드럽게 재배열
+ * - 화면에 들어올 때 · 필터로 새 카드가 들어올 때 왼쪽부터 차례로 나타난다 (STAGGER)
  */
 export default function ProjectGrid({ projects, hoveredId = null, onCardHoverChange }: Props) {
   const router = useRouter();
@@ -82,6 +91,31 @@ export default function ProjectGrid({ projects, hoveredId = null, onCardHoverCha
   const clearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [maxDrag, setMaxDrag] = useState(0);
+
+  /**
+   * 그리드가 화면에 들어왔는지 — 들어오는 순간 카드들이 왼쪽부터 차례로 나타난다.
+   * 홈에서는 진입(Back 포함)하자마자, 상세 페이지 아래 그리드는 스크롤해서 닿았을 때 재생된다.
+   * 한 번 켜지면 계속 켜 둔다 (필터로 0건이 되었다 돌아와도 다시 숨지 않는다).
+   */
+  const revealed = useInView(viewportRef, { once: true, amount: 0.3 });
+
+  /**
+   * 카드마다 기다릴 시간 — "이번에 새로 나타나는 카드"끼리만 왼쪽부터 순번을 매긴다.
+   * 처음에는 전부가 새 카드라 전체가 차례로 올라오고, 필터를 바꿀 때는 새로 들어온 카드들만
+   * 차례로 올라온다. 남아 있던 카드는 이미 나타나 있으므로 layout 스프링으로 자리만 옮긴다.
+   * 직전 목록은 커밋된 뒤에야 갱신해(아래 effect) 한 번의 렌더 안에서는 기준이 흔들리지 않는다.
+   */
+  const shownIds = useRef<Set<string>>(new Set());
+  let entering = 0;
+  const enterDelays = new Map<string, number>();
+  for (const project of projects) {
+    if (revealed && shownIds.current.has(project.id)) continue;
+    enterDelays.set(project.id, entering * STAGGER);
+    entering += 1;
+  }
+  useEffect(() => {
+    if (revealed) shownIds.current = new Set(projects.map((p) => p.id));
+  }, [revealed, projects]);
 
   /**
    * 휠이 겨냥하고 있는 목표 x. 트랙의 현재 x와 따로 두는 이유는,
@@ -379,11 +413,13 @@ export default function ProjectGrid({ projects, hoveredId = null, onCardHoverCha
               // track-touch: 터치에서 framer가 넣는 touch-action: pan-y를 덮어 세로 팬을 막는다 (globals.css 참고)
               className="track-touch flex w-max cursor-grab items-start gap-[1.2rem] px-[1.8rem] active:cursor-grabbing md:gap-[1.8rem] md:px-[3rem]"
             >
-              <AnimatePresence mode="popLayout" initial={false}>
+              <AnimatePresence mode="popLayout">
                 {projects.map((project) => (
                   <ProjectCard
                     key={project.id}
                     project={project}
+                    revealed={revealed}
+                    enterDelay={enterDelays.get(project.id) ?? 0}
                     isHovered={hoveredId === project.id}
                     // 다른 카드가 호버 중일 때만 축소 — 아무것도 호버 안 하면 전부 원래 크기
                     isDimmed={hoveredId !== null && hoveredId !== project.id}
