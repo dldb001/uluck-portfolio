@@ -66,7 +66,7 @@ export default function RootLayout({
           <CustomCursor />
           {children}
         </CardHoverProvider>
-        {/* 좌상단 프로필 오브 — 모든 페이지에 같은 자리로 떠 있다 (예전 하단 이름 pill을 대신한다) */}
+        {/* 좌상단 프로필 오브 — 홈에서만 뜬다(상세 페이지에서는 스스로 숨는다). 예전 하단 이름 pill을 대신한다 */}
         <ProfileOrb />
       </body>
     </html>

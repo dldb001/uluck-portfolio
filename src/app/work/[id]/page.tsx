@@ -85,13 +85,9 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
     <main className="min-h-screen overflow-x-hidden">
       {/*
         1. 뒤로가기 + 제목 — 아래 이미지 그리드와 같은 폭(CONTENT_W)으로 좌우를 맞춘다.
-
-        위 패딩: 좌상단에 프로필 오브(ProfileOrb)가 떠 있다 — 위·왼쪽 여백이 오브 지름(--orb)이라
-        오브는 --orb ~ 2×--orb 구간(md 기준 56 ~ 112px)을 차지한다. 본문 왼쪽 여백이 그보다 좁은 화면에서는
-        Back 링크가 오브와 겹치므로 오브 아래(2×--orb + 1.5rem)에서 시작한다.
-        1680px부터는 왼쪽 여백이 (1680 − 1152) / 4 + 12 = 144px라 오브 옆으로 비켜나므로 원래 값(5vh)으로 돌린다.
+        (좌상단 프로필 오브는 상세 페이지에서 그리지 않으므로 Back 링크와 겹칠 걱정 없이 5vh에서 시작한다)
       */}
-      <header className={`mx-auto ${CONTENT_W} px-3 pt-[calc(var(--orb)*2_+_1.5rem)] min-[1680px]:pt-[5vh]`}>
+      <header className={`mx-auto ${CONTENT_W} px-3 pt-[5vh]`}>
         <Link
           href="/"
           aria-label="홈으로 돌아가기"

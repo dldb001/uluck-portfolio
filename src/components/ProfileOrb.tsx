@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { PROFILE, SITE } from "@/lib/config";
 
@@ -76,6 +77,7 @@ export default function ProfileOrb() {
   /** 카드가 펼쳐진 모양인지 — 닫을 때는 내용이 다 사라진 다음에 false가 된다 */
   const [expanded, setExpanded] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   const show = () => {
     setExpanded(true);
@@ -101,6 +103,10 @@ export default function ProfileOrb() {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open]);
+
+  // 상세 페이지(/work/[id])에서는 그리지 않는다 — 홈에서만 떠 있는 버튼이다.
+  // 훅은 위에서 모두 부른 뒤에 빠져야 경로가 바뀌어도 훅 순서가 흔들리지 않는다.
+  if (pathname.startsWith("/work/")) return null;
 
   return (
     // "동작 줄이기" 사용자에게는 변형·이동 없이 바로 바뀐다
