@@ -6,6 +6,7 @@ import ProjectGallery from "@/components/ProjectGallery";
 import { projects } from "@/data/projects";
 import { isGalleryText } from "@/lib/types";
 import { PROSE_TEXT, PROSE_W } from "@/lib/styles";
+import { jpegSize } from "@/lib/imageSize";
 
 export function generateStaticParams() {
   return projects.map((p) => ({ id: p.id }));
@@ -43,11 +44,15 @@ const MIN_GALLERY = 3;
  */
 const CONTENT_W = "w-[calc((100%_+_72rem)/2)] max-w-full";
 
+/** 히어로 크기를 읽지 못했을 때의 비율 — 히어로 대부분이 3:1 안팎의 파노라마다 */
+const HERO_FALLBACK_RATIO = "3 / 1";
+
 export default function WorkDetail({ params }: { params: { id: string } }) {
   const project = projects.find((p) => p.id === params.id);
   if (!project) notFound();
 
   const hero = project.hero ?? project.thumbnail;
+  const heroSize = jpegSize(hero);
 
   /**
    * 제목 아래 메타 — 값이 있는 항목만 줄이 된다.
@@ -141,8 +146,15 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
         </dl>
       </header>
 
-      {/* 2. 히어로 — 좌우 여백 없이 화면 가로를 꽉 채운다 */}
-      <div className="relative mt-[5vh] h-[56vh] w-full bg-ink/5 md:h-[68vh]">
+      {/*
+        2. 히어로 — 좌우 여백 없이 화면 가로를 꽉 채우고, 높이는 그림의 원본 비율로 정한다.
+        예전엔 높이를 56vh / 68vh로 고정해 창을 좁힐수록 object-cover가 좌우를 잘라냈다(3:1 파노라마가 375px에서 거의
+        정사각형만 남았다). 상자 비율이 그림과 같으면 어느 폭에서나 잘리는 곳 없이 그대로 줄고 는다.
+      */}
+      <div
+        className="relative mt-[5vh] w-full bg-ink/5"
+        style={{ aspectRatio: heroSize ? `${heroSize.width} / ${heroSize.height}` : HERO_FALLBACK_RATIO }}
+      >
         <Image
           src={hero}
           alt={project.title}
