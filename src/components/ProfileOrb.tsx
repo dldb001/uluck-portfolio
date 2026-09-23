@@ -55,7 +55,7 @@ const SURFACE = {
 const TEXT = "text-[13px] leading-[1.55]";
 
 /**
- * 화면 좌상단의 유리 오브 — 누르면 둥근 사각형 카드로 늘어나며 이력과 연락처를 보여준다.
+ * 화면 좌상단(모바일은 하단 가운데)의 유리 오브 — 누르면 둥근 사각형 카드로 늘어나며 이력과 연락처를 보여준다.
  *
  * 구조:
  *   원 (.orb)          둘레를 도는 그라디언트 링(자리마다 흐림이 다르고 그 분포가 돈다) + 그 위를 덮는 흰 원판.
@@ -66,6 +66,7 @@ const TEXT = "text-[13px] leading-[1.55]";
  *   내용              버튼 위에 뜨지만 pointer-events-none이라 클릭은 버튼으로 흘러간다 (링크만 예외).
  *
  * 여백: 위·왼쪽은 오브 지름(--orb)만큼 (페이지 아래쪽 2배 여백은 app/page.tsx).
+ * 모바일(768px 이하)에서는 좌상단 대신 그 아래쪽 여백의 한가운데에 놓이고, 가로 가운데를 지킨 채 위로 펼쳐진다 (래퍼 div 참고).
  *
  * 열고 닫는 순서 — 변형 도중에 글자가 찌그러져 보이지 않도록 둘을 겹치지 않게 한다:
  *   열기  카드가 먼저 늘어나고, 거의 다 늘어난 뒤에 내용이 나타난다 (내용의 delay)
@@ -111,15 +112,23 @@ export default function ProfileOrb() {
   return (
     // "동작 줄이기" 사용자에게는 변형·이동 없이 바로 바뀐다
     <MotionConfig reducedMotion="user">
-      {/* z-40: 페이지 위, 커스텀 커서(z-50) 아래 */}
-      <div ref={wrapRef} className="group fixed left-[var(--orb)] top-[var(--orb)] z-40">
+      {/* z-40: 페이지 위, 커스텀 커서(z-50) 아래.
+          모바일(768px 이하)에서는 화면 맨 아래, 카드 그리드 밑의 여백(오브 지름의 2배, app/page.tsx의 pb) 한가운데에 둔다 —
+          바닥에서 오브 반지름만큼 띄우고, 가로는 left 50% + translateX(-50%)로 뷰포트 정중앙에 맞춘다.
+          래퍼 폭이 곧 카드 폭이라 펼쳐도 가운데가 유지되고, 바닥에 붙어 있으므로 카드는 위로 자란다.
+          (768px 자체도 모바일로 친다 — 그래서 max-md(767px까지)가 아니라 max-[768px]을 쓴다) */}
+      <div
+        ref={wrapRef}
+        className="group fixed left-[var(--orb)] top-[var(--orb)] z-40 max-[768px]:bottom-[calc(var(--orb)/2)] max-[768px]:left-1/2 max-[768px]:top-auto max-[768px]:-translate-x-1/2"
+      >
         {/* 접힌 원 — 둘레를 도는 그라디언트 링 + 그 위를 덮는 흰 원판 (globals.css .orb-*). 원 자리에 고정된 오브 크기라
             펼치면 사라지고 카드 표면(SURFACE.open)이 이어받는다. 원판의 그림자가 카드(overflow-hidden) 밖으로
             퍼져야 하므로 카드 바깥, 카드보다 먼저 그린다.
             호버 확대도 여기서 CSS로 준다 — 보이는 건 이 레이어고, 카드는 접힌 동안 투명한 클릭 영역일 뿐이다. */}
         <span
           aria-hidden
-          className={`orb pointer-events-none absolute left-0 top-0 size-[var(--orb)] ${
+          // 모바일: 래퍼의 바닥 · 가로 가운데 — 래퍼가 가운데 · 바닥 기준으로 커지므로 펼쳐도 원은 제자리에서 사라진다
+          className={`orb pointer-events-none absolute left-0 top-0 size-[var(--orb)] max-[768px]:bottom-0 max-[768px]:left-1/2 max-[768px]:top-auto max-[768px]:-translate-x-1/2 ${
             expanded ? "orb--hidden" : "group-hover:scale-[1.06]"
           }`}
         >
