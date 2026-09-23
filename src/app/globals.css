@@ -33,6 +33,7 @@
        히어로 내용 ≈ 2.04×fs(2줄 헤드라인) + 6.5vh + 입력창 + 0.795vh + (0.47×fs + 2) + 4vh
      이 둘을 맞추면 fs ≤ 약 12.3vh − 23px 이 나온다. 6.2vh는 그보다 충분히 아래라
      세로 360px 근처까지 여유가 남는다.
+     (하단 이름 pill(푸터)은 좌상단 오브로 옮겨져 지금은 없다 — 히어로 몫이 그만큼 늘어 여유가 더 크다)
 
      6.2vh를 고른 또 하나의 기준은 "기존 화면을 건드리지 않는 것"이다. 상한 3.15rem(50.4px)에
      걸리려면 높이가 813px보다 크기만 하면 되므로, 1920x1080은 물론 1440x900 같은 노트북도
@@ -42,6 +43,17 @@
      최소값 1.26rem(20.16px)은 그대로 둔다. 6.2vh 기준으로 높이 약 325px에서 바닥에 닿고,
      그 아래로는 더 줄지 않는다. */
   --hero-fs: clamp(1.26rem, min(4.284vw, 6.2vh), 3.15rem);
+
+  /* 좌상단 프로필 오브의 지름 — 오브의 위·왼쪽 여백도 이 값이고(ProfileOrb), 페이지 맨 아래 여백은
+     2배다(app/page.tsx의 pb).
+     상세 페이지 헤더도 이 값으로 오브를 비켜 간다 (work/[id]/page.tsx). */
+  --orb: 3rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --orb: 3.5rem;
+  }
 }
 
 html {
@@ -174,41 +186,6 @@ html.lenis body {
   --headline-gradient-duration: 6.667s;
 }
 
-/* 커스텀 커서(검은 점)가 카드 호버 중에 덮어쓰는 단색 레이어.
-   헤드라인과 같은 팔레트를 순서대로 지나가며 배경색 자체가 바뀐다.
-   구간이 linear로 보간되므로 색과 색 사이는 자동으로 크로스페이드되고,
-   마지막 스톱이 첫 색이라 이음매 없이 무한 반복된다.
-   검은 점 위에 이 레이어를 얹고 opacity를 0 ↔ 1로 전환한다 (CustomCursor 참고). */
-@keyframes cursor-cycle {
-  0% {
-    background-color: var(--hl-c1);
-  }
-  16.67% {
-    background-color: var(--hl-c2);
-  }
-  33.33% {
-    background-color: var(--hl-c3);
-  }
-  50% {
-    background-color: var(--hl-c4);
-  }
-  66.67% {
-    background-color: var(--hl-c5);
-  }
-  83.33% {
-    background-color: var(--hl-c6);
-  }
-  100% {
-    background-color: var(--hl-c1);
-  }
-}
-
-.cursor-cycle {
-  background-color: var(--hl-c1);
-  /* 6색 한 바퀴 8s — 색당 약 1.3s. 헤드라인(10s)과 비슷한 결이되 조금 더 경쾌하게. */
-  animation: cursor-cycle 8s linear infinite;
-}
-
 /* ── 카드 호버 전용: 속도만 1.5배 ──
    색은 바로 위 규칙이 담당하고 여기서는 주기만 덮어쓴다 (10s ÷ 1.5 = 6.667s).
    blur/opacity는 Hero의 Tailwind 클래스가, 속도는 이 변수가 맡아 서로 겹치는 속성이 없다.
@@ -217,9 +194,152 @@ html.lenis body {
   --headline-gradient-duration: 6.667s;
 }
 
+/* ── 프로필 오브 (ProfileOrb) ──
+   페이지 배경색으로 채운 원판 + 그 둘레를 따라 도는 브랜드 그라디언트 링. 링은 자리마다 흐린 정도가
+   다르고, 그 불규칙한 흐림 분포가 원을 따라 천천히 돈다.
+
+   원판 (.orb-disc) — 링 위(z-index 1)에 올린 불투명한 흰 원. 링 띠 두께(--orb-ring)만큼 안쪽으로
+     들어가 있어 링은 그 바깥 테두리로만 보이고, 흐림이 안쪽으로 번진 부분은 원판이 전부 덮는다 —
+     안쪽은 늘 깔끔한 단색에 경계가 또렷하다. 옅은 그림자 두 겹으로 링 위에 살짝 떠 있는 느낌을 준다.
+
+   링 (.orb-ring) — 팔레트 conic-gradient를 원 전체에 칠한 뒤 mask로 가장자리 띠만 남긴다
+     (content-box와 border-box 두 겹을 exclude로 겹치면 padding 띠만 보인다). 띠 두께 = padding.
+     conic의 첫 색과 끝 색이 같아 돌아도 이음매가 없다. 링 자체도 10초에 한 바퀴 돈다(색의 흐름).
+
+   흐림 분포 — 같은 링을 흐림 정도만 다르게 세 벌 겹친다:
+       .orb-blur--1  1.5px (또렷)   .orb-blur--2  5px   .orb-blur--3  10px (가장 흐릿)
+     각 벌은 .orb-glow-layer의 conic mask로 원의 일부 각도에서만 보인다. 아래 기준 각도마다 한 벌이
+     100%이고 이웃한 기준 각도 사이에서는 두 벌이 선형으로 교차해 넘어간다 — 세 mask의 합이 어느
+     각도에서나 1이라 링이 끊기지 않고, 구간 폭이 제각각이라 흐림이 불규칙하게 분포한다.
+       0° 1 · 50° 1 · 95° 2 · 130° 3 · 175° 3 · 200° 1 · 225° 2 · 280° 3 · 330° 2 · 360° 1
+     흐린 벌일수록 띠를 조금 두껍게(2 → 3 → 4px) 해, 넓게 퍼져도 색이 너무 옅어지지 않게 한다.
+
+   순서가 중요하다 — 흐림(filter)은 링 mask보다 바깥 요소에 건다. 같은 요소에 두면 CSS가 filter를
+     먼저 적용하고 mask를 나중에 씌워, 번진 부분이 다시 2px 띠로 잘려 나간다.
+       .orb-glow (회전) > .orb-glow-layer (각도 mask) > .orb-blur (filter) > .orb-ring (띠 mask · 색)
+     .orb-glow는 번짐이 잘리지 않게 사방 14px 크게 잡고, 안쪽 .orb-blur가 다시 14px 들어가 원 크기로 맞춘다.
+
+   회전 — 흐림 분포는 .orb-glow가 16초에 한 바퀴, 색은 링이 따로 10초에 한 바퀴 돈다. 박자가 달라
+     색과 흐림이 매번 다른 조합으로 만나 기계적으로 반복되는 느낌이 덜하다. */
+.orb {
+  /* 링 띠 중 원판 바깥으로 드러나는 두께 */
+  --orb-ring: 2px;
+  /* 호버 확대 · 펼칠 때 사라짐은 카드 변형(ProfileOrb의 MORPH)과 같은 0.6s · 같은 곡선 —
+     하나라도 박자가 다르면 펼치는 도중에 한쪽이 먼저 끝나 툭 끊겨 보인다. */
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.orb > * {
+  transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* .orb-glow의 opacity보다 뒤에 오지 않으므로 선택자를 한 단계 높여 이긴다 */
+.orb.orb--hidden > * {
+  opacity: 0;
+}
+
+.orb-disc {
+  position: absolute;
+  inset: var(--orb-ring);
+  z-index: 1;
+  border-radius: 9999px;
+  background-color: #fff;
+  box-shadow:
+    0 1px 3px rgb(20 20 20 / 0.05),
+    0 6px 18px -6px rgb(20 20 20 / 0.1);
+}
+
+/* 링 색 — 팔레트(--hl-c*)는 헤드라인 · 커서와 같이 쓰므로 값은 두고, 링에서만 채도를 올리고 옅게 한다 */
+.orb-glow {
+  position: absolute;
+  inset: -14px;
+  z-index: 0;
+  filter: saturate(1.4);
+  opacity: 0.7;
+  pointer-events: none;
+  animation: orb-spin 16s linear infinite;
+}
+
+.orb-glow-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.orb-glow-layer--1 {
+  -webkit-mask-image: conic-gradient(#000 0deg, #000 50deg, transparent 95deg, transparent 175deg, #000 200deg, transparent 225deg, transparent 330deg, #000 360deg);
+  mask-image: conic-gradient(#000 0deg, #000 50deg, transparent 95deg, transparent 175deg, #000 200deg, transparent 225deg, transparent 330deg, #000 360deg);
+}
+
+.orb-glow-layer--2 {
+  -webkit-mask-image: conic-gradient(transparent 50deg, #000 95deg, transparent 130deg, transparent 200deg, #000 225deg, transparent 280deg, #000 330deg, transparent 360deg);
+  mask-image: conic-gradient(transparent 50deg, #000 95deg, transparent 130deg, transparent 200deg, #000 225deg, transparent 280deg, #000 330deg, transparent 360deg);
+}
+
+.orb-glow-layer--3 {
+  -webkit-mask-image: conic-gradient(transparent 95deg, #000 130deg, #000 175deg, transparent 200deg, transparent 225deg, #000 280deg, transparent 330deg);
+  mask-image: conic-gradient(transparent 95deg, #000 130deg, #000 175deg, transparent 200deg, transparent 225deg, #000 280deg, transparent 330deg);
+}
+
+.orb-blur {
+  position: absolute;
+  inset: 14px;
+}
+
+.orb-blur--1 {
+  filter: blur(1.5px);
+}
+
+.orb-blur--2 {
+  filter: blur(5px);
+}
+
+.orb-blur--3 {
+  filter: blur(10px);
+}
+
+.orb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  padding: 2px;
+  background: conic-gradient(
+    var(--hl-c1),
+    var(--hl-c2),
+    var(--hl-c3),
+    var(--hl-c4),
+    var(--hl-c5),
+    var(--hl-c6),
+    var(--hl-c1)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: orb-spin 10s linear infinite;
+}
+
+.orb-blur--2 > .orb-ring {
+  padding: 3px;
+}
+
+.orb-blur--3 > .orb-ring {
+  padding: 4px;
+}
+
+@keyframes orb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .headline-layer,
-  .cursor-cycle {
+  .orb-glow,
+  .orb-ring {
     animation: none;
   }
 }

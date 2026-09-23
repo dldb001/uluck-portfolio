@@ -18,6 +18,7 @@ import "pretendard/dist/web/static/Pretendard-Bold.css";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import CustomCursor from "@/components/CustomCursor";
+import ProfileOrb from "@/components/ProfileOrb";
 import { CardHoverProvider } from "@/components/CardHoverProvider";
 
 // 헤드라인/본문 + 로고 워드마크.
@@ -65,6 +66,8 @@ export default function RootLayout({
           <CustomCursor />
           {children}
         </CardHoverProvider>
+        {/* 좌상단 프로필 오브 — 모든 페이지에 같은 자리로 떠 있다 (예전 하단 이름 pill을 대신한다) */}
+        <ProfileOrb />
       </body>
     </html>
   );

@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useCardHover } from "@/components/CardHoverProvider";
 
-/** 원 지름(px) — 아래 음수 마진이 이 값의 절반이라 좌표에 정확히 중심이 맞는다 */
-const SIZE = 7;
+/** 평소 점의 지름(px) */
+const DOT = 7;
 
 /**
  * 포인터에 거의 동시에 붙는 spring.
@@ -17,7 +17,7 @@ const SIZE = 7;
  */
 const FOLLOW = { stiffness: 4500, damping: 36, mass: 0.1 };
 
-/** 카드 호버 시 확대/색 전환에 함께 쓰는 타이밍 */
+/** 점 ↔ 렌즈 전환(크기 · 칠 · 윤곽)에 함께 쓰는 타이밍 */
 const MORPH = { duration: 0.28, ease: "easeOut" } as const;
 
 /**
@@ -30,11 +30,53 @@ const MORPH = { duration: 0.28, ease: "easeOut" } as const;
 const POINTER_QUERY = "(hover: hover) and (pointer: fine)";
 
 /**
+ * 카드 위에서 커서가 커져 되는 유리 렌즈의 지름(px) — 커서 요소의 실제 크기이고, 굴절 계산 영역도 이 원 안으로 제한된다.
+ * 아래 음수 마진이 이 값의 절반이라 좌표에 정확히 중심이 맞는다.
+ */
+const LENS = 56;
+
+/** 렌즈 굴절 SVG 필터의 id — 아래 <svg>의 <filter>와 렌즈의 backdrop-filter: url(#…)이 함께 쓴다 */
+const LENS_FILTER = "cursor-lens";
+
+/**
+ * 렌즈 뒤를 비추는 backdrop-filter.
+ *
+ * 굴절: backdrop-filter에 SVG 필터(url)를 거는 건 Chromium(Chrome · Edge · Whale 등)만 그린다.
+ *   Safari · Firefox는 url()을 무시해 렌즈가 투명한 원만 남으므로, 그쪽은 살짝 흐리고 밝히는 유리로 대신한다.
+ * 뒤의 saturate/brightness는 유리를 통과한 빛처럼 색이 조금 맑아 보이게 하는 몫.
+ */
+const REFRACT = `url(#${LENS_FILTER}) saturate(1.15) brightness(1.04)`;
+const FROSTED = "blur(1.5px) saturate(1.15) brightness(1.04)";
+
+/**
+ * 점과 렌즈의 모습 — framer가 둘 사이를 MORPH로 보간한다.
+ *
+ * 점:   렌즈를 점 크기로 줄이고(DOT / LENS) ink(#141414)로 칠한다. 유리 윤곽은 투명.
+ * 렌즈: 원래 크기, 칠은 투명, 유리 윤곽(가장자리 1px 하이라이트 · 위쪽 반사광 · 아래쪽 옅은 그늘 · 바깥 옅은 그림자).
+ * 그림자 목록은 두 상태의 개수 · 순서가 같아야 보간되므로 점 쪽에도 같은 모양의 투명한 그림자를 둔다.
+ */
+const LOOK = {
+  dot: {
+    scale: DOT / LENS,
+    backgroundColor: "rgba(20, 20, 20, 1)",
+    boxShadow:
+      "inset 0 0 0 1px rgba(255, 255, 255, 0), inset 0 2px 6px rgba(255, 255, 255, 0), inset 0 -4px 10px rgba(20, 20, 20, 0), 0 4px 14px rgba(20, 20, 20, 0)",
+  },
+  lens: {
+    scale: 1,
+    backgroundColor: "rgba(20, 20, 20, 0)",
+    boxShadow:
+      "inset 0 0 0 1px rgba(255, 255, 255, 0.45), inset 0 2px 6px rgba(255, 255, 255, 0.4), inset 0 -4px 10px rgba(20, 20, 20, 0.08), 0 4px 14px rgba(20, 20, 20, 0.08)",
+  },
+};
+
+/**
  * 전역 커스텀 커서.
  * 포인터 좌표를 motion value로 받아 spring을 한 겹 씌워 따라오게 한다.
  * 기본 커서 숨김은 globals.css에서 처리 (마우스가 있는 환경에서만).
  *
- * 프로젝트 카드 이미지 호버 중에는 2배로 커지고, 검은 배경 위에 색이 순환하는 단색 레이어가 떠오른다.
+ * 프로젝트 카드 이미지 호버 중에는 검은 점이 커지면서 유리 렌즈가 되어, 그 아래 이미지를 살짝 굴절시켜 보여준다.
+ * 점과 렌즈는 한 요소라 화면의 커서는 늘 하나다.
  * 그 상태는 CardHoverProvider에서 받아 온다 — 헤드라인 blur/가속과 완전히 같은 소스다.
  */
 export default function CustomCursor() {
@@ -52,14 +94,20 @@ export default function CustomCursor() {
 
   const { hoveredId } = useCardHover();
   const onCard = hoveredId !== null;
+  /** 카드를 벗어난 뒤에도 점으로 다 줄어들 때까지 굴절을 유지한다 (onAnimationComplete가 끈다) */
+  const [lensKept, setLensKept] = useState(false);
+  const glass = onCard || lensKept;
 
   /**
    * 서버와 첫 클라이언트 렌더는 false — 마운트 뒤 matchMedia로 판정한다.
    * 태블릿에 마우스를 꽂는 등 도중에 바뀌는 경우도 change 이벤트로 따라간다.
    */
   const [enabled, setEnabled] = useState(false);
+  /** backdrop-filter에 SVG 필터를 그릴 수 있는 브라우저(Chromium)인지 — 아니면 렌즈는 흐린 유리로 대신한다 */
+  const [refracts, setRefracts] = useState(false);
 
   useEffect(() => {
+    setRefracts(/Chrome\//.test(navigator.userAgent));
     const mq = window.matchMedia(POINTER_QUERY);
     const sync = () => setEnabled(mq.matches);
     sync();
@@ -105,28 +153,46 @@ export default function CustomCursor() {
   if (!enabled) return null;
 
   return (
-    <motion.div
-      aria-hidden
-      // x/y는 framer가 transform으로 넣으므로, 중심 정렬은 transform 대신 음수 마진으로 한다
-      // (scale도 같은 transform에 합쳐지고 원점이 중앙이라 커져도 좌표가 어긋나지 않는다)
-      className="pointer-events-none fixed left-0 top-0 z-50 rounded-full bg-ink"
-      style={{
-        x: smoothX,
-        y: smoothY,
-        width: SIZE,
-        height: SIZE,
-        marginLeft: -SIZE / 2,
-        marginTop: -SIZE / 2,
-      }}
-      animate={{ opacity: visible ? 1 : 0, scale: onCard ? 2 : 1 }}
-      transition={{ opacity: { duration: 0.18, ease: "easeOut" }, scale: MORPH }}
-    >
-      {/* 색 순환 레이어를 검은 점 위에 얹고 opacity로 크로스페이드 (순환은 globals.css의 cursor-cycle) */}
-      <motion.span
-        className="cursor-cycle absolute inset-0 rounded-full"
-        animate={{ opacity: onCard ? 1 : 0 }}
-        transition={MORPH}
+    <>
+      {/* 렌즈 굴절 필터 — 저주파 노이즈(feTurbulence)로 렌즈 안 픽셀을 몇 px씩 밀어(feDisplacementMap) 유리를
+          지난 것처럼 살짝 일그러뜨린다. baseFrequency가 낮을수록 물결이 크고 느슨하고, scale이 밀어내는 최대 거리다.
+          display: none이면 필터 참조가 끊기는 브라우저가 있어 크기 0으로 숨긴다. */}
+      <svg aria-hidden width="0" height="0" className="pointer-events-none absolute">
+        <filter id={LENS_FILTER} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="9" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+
+      {/* 커서 — 점과 유리 렌즈가 한 요소다. 실제 크기는 렌즈(LENS)이고, 평소에는 scale로 점 크기까지 줄이고
+          검게 칠해 둔다. 카드 위에서는 원래 크기로 커지면서 검은 칠이 빠지고 유리 윤곽 · 굴절이 드러난다.
+          x/y는 framer가 transform으로 넣으므로, 중심 정렬은 transform 대신 음수 마진으로 한다
+          (scale도 같은 transform에 합쳐지고 원점이 중앙이라 커져도 좌표가 어긋나지 않는다). */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none fixed left-0 top-0 z-50 rounded-full"
+        style={{
+          x: smoothX,
+          y: smoothY,
+          width: LENS,
+          height: LENS,
+          marginLeft: -LENS / 2,
+          marginTop: -LENS / 2,
+          // 굴절은 렌즈인 동안만 켠다 — 점일 때는 backdrop 계산 자체를 하지 않는다
+          ...(glass && {
+            backdropFilter: refracts ? REFRACT : FROSTED,
+            WebkitBackdropFilter: refracts ? REFRACT : FROSTED,
+          }),
+        }}
+        initial={false}
+        animate={{
+          opacity: visible ? 1 : 0,
+          ...(onCard ? LOOK.lens : LOOK.dot),
+        }}
+        transition={{ opacity: { duration: 0.18, ease: "easeOut" }, default: MORPH }}
+        // 렌즈가 다 커지면 굴절을 켠 채로 두고, 점으로 다 줄어든 뒤에야 끈다 — 줄어드는 도중에 굴절이 뚝 끊기지 않게
+        onAnimationComplete={() => setLensKept(onCard)}
       />
-    </motion.div>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import Footer from "@/components/Footer";
 import HomeScreen from "@/components/HomeScreen";
 import ProjectGallery from "@/components/ProjectGallery";
 import { projects } from "@/data/projects";
@@ -79,8 +78,15 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
 
   return (
     <main className="min-h-screen overflow-x-hidden">
-      {/* 1. 뒤로가기 + 제목 — 아래 이미지 그리드와 같은 폭(CONTENT_W)으로 좌우를 맞춘다 */}
-      <header className={`mx-auto ${CONTENT_W} px-3 pt-[5vh]`}>
+      {/*
+        1. 뒤로가기 + 제목 — 아래 이미지 그리드와 같은 폭(CONTENT_W)으로 좌우를 맞춘다.
+
+        위 패딩: 좌상단에 프로필 오브(ProfileOrb)가 떠 있다 — 위·왼쪽 여백이 오브 지름(--orb)이라
+        오브는 --orb ~ 2×--orb 구간(md 기준 56 ~ 112px)을 차지한다. 본문 왼쪽 여백이 그보다 좁은 화면에서는
+        Back 링크가 오브와 겹치므로 오브 아래(2×--orb + 1.5rem)에서 시작한다.
+        1680px부터는 왼쪽 여백이 (1680 − 1152) / 4 + 12 = 144px라 오브 옆으로 비켜나므로 원래 값(5vh)으로 돌린다.
+      */}
+      <header className={`mx-auto ${CONTENT_W} px-3 pt-[calc(var(--orb)*2_+_1.5rem)] min-[1680px]:pt-[5vh]`}>
         <Link
           href="/"
           aria-label="홈으로 돌아가기"
@@ -169,10 +175,10 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
         HomeScreen은 "한 화면에 딱 맞는" 레이아웃(Hero가 flex-1, 그리드가 h-[52dvh])을 전제로
         만들어져 있어서, 여기서도 높이가 확정된 h-dvh 세로 flex 컨테이너로 감싸야 카드 크기
         계산(100cqh)이 홈과 동일하게 동작한다. 카드 트랙이 좌우로 넘치므로 overflow-hidden도 함께.
+        pb(오브 지름의 2배)도 홈(app/page.tsx)과 같은 값이다.
       */}
-      <div className="flex h-dvh flex-col overflow-hidden border-t border-ink/10">
+      <div className="flex h-dvh flex-col overflow-hidden border-t border-ink/10 pb-[calc(var(--orb)*2)]">
         <HomeScreen />
-        <Footer />
       </div>
     </main>
   );

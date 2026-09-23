@@ -41,7 +41,7 @@ export default function CategoryButtons({ categories, active, onSelect }: Props)
             aria-pressed={isActive}
             onClick={() => onSelect(isActive ? "" : category)}
             className={[
-              // 글자 크기는 행에서 상속받고, 패딩은 em이라 함께 비례한다 (푸터 pill과 공유 — PILL)
+              // 글자 크기는 행에서 상속받고, 패딩은 em이라 함께 비례한다 (모양은 PILL)
               `flex-auto whitespace-nowrap transition-colors duration-200 ${PILL} ${PILL_PX}`,
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
               isActive
