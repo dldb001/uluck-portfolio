@@ -9,6 +9,7 @@ import {
   type GalleryRow,
 } from "@/lib/types";
 import { BODY_TEXT, PROSE_W } from "@/lib/styles";
+import Reveal from "./Reveal";
 
 /**
  * 상세 페이지 본문 이미지 그리드.
@@ -28,6 +29,12 @@ const BLOCKS: { kind: BlockKind; count: number }[] = [
   { kind: "asym", count: 2 },
   { kind: "trio", count: 3 },
 ];
+
+/**
+ * 같은 행에서 한 칸 뒤로 갈 때마다 늦추는 시간(초) — 행이 한 번에 뜨지 않고 왼쪽부터 차례로 올라온다.
+ * 3열이어도 마지막 칸이 0.16초 늦는 정도라 흐름만 느껴지고 기다리게 하지는 않는다.
+ */
+const STAGGER = 0.08;
 
 /** 블록 아래 여백 — 큰 블록일수록 더 준다 */
 const SPACING: Record<BlockKind, string> = {
@@ -97,19 +104,23 @@ function toBlocks(images: GalleryImage[]) {
   return blocks;
 }
 
+/** 틀에 맞춰 object-cover로 채우는 이미지 한 칸 — 스크롤해 들어올 때 올라오며 나타난다 (Reveal) */
 function Frame({
   img,
   className,
   style,
+  delay,
 }: {
   img: GalleryImage;
   className: string;
   style?: CSSProperties;
+  delay?: number;
 }) {
   return (
-    <div
+    <Reveal
       className={`relative overflow-hidden rounded-[10px] bg-ink/5 ${className}`}
       style={style}
+      delay={delay}
     >
       <Image
         src={img.src}
@@ -124,7 +135,7 @@ function Frame({
         quality={90}
         className="no-select object-cover"
       />
-    </div>
+    </Reveal>
   );
 }
 
@@ -160,7 +171,13 @@ function TrioGallery({ images }: { images: GalleryImage[] }) {
           className={`grid grid-cols-3 gap-3 md:gap-4 ${i === sets.length - 1 ? "" : SPACING.trio}`}
         >
           {set.map((img, j) => (
-            <Frame key={j} img={img} className="w-full" style={{ aspectRatio }} />
+            <Frame
+              key={j}
+              img={img}
+              className="w-full"
+              style={{ aspectRatio }}
+              delay={j * STAGGER}
+            />
           ))}
         </div>
       ))}
@@ -188,7 +205,13 @@ function FixedRow({ images }: { images: GalleryImage[] }) {
       style={{ gridTemplateColumns: `repeat(${images.length}, minmax(0, 1fr))` }}
     >
       {images.map((img, i) => (
-        <Frame key={i} img={img} className="w-full" style={{ aspectRatio }} />
+        <Frame
+          key={i}
+          img={img}
+          className="w-full"
+          style={{ aspectRatio }}
+          delay={i * STAGGER}
+        />
       ))}
     </div>
   );
@@ -222,11 +245,19 @@ const NATURAL_SOLO_RATIO = 1.2;
  * 좌우 끝이 어긋난다. 폭을 항상 칸에 맞추면 창 높이와 무관하게 끝이 맞는다.
  * 세로는 w-full + h-auto라 원본 비율대로 따라온다.
  */
-function NaturalImage({ img, sizes }: { img: GalleryImage; sizes: string }) {
+function NaturalImage({
+  img,
+  sizes,
+  delay,
+}: {
+  img: GalleryImage;
+  sizes: string;
+  delay?: number;
+}) {
   // 크기를 모르면 비율을 잡을 수 없다 — 16:9 상자 안에 contain으로 넣어 잘림만 막는다
   if (!img.width || !img.height) {
     return (
-      <div className="relative aspect-[16/9] w-full">
+      <Reveal className="relative aspect-[16/9] w-full" delay={delay}>
         <Image
           src={img.src}
           alt=""
@@ -237,25 +268,29 @@ function NaturalImage({ img, sizes }: { img: GalleryImage; sizes: string }) {
           quality={90}
           className="no-select rounded-[10px] object-contain"
         />
-      </div>
+      </Reveal>
     );
   }
 
   return (
-    <Image
-      src={img.src}
-      // 히어로에서 이미 프로젝트를 설명했으므로 본문 이미지는 장식 취급
-      alt=""
-      aria-hidden
-      width={img.width}
-      height={img.height}
-      draggable={false}
-      sizes={sizes}
-      quality={90}
-      // w-full + h-auto: 폭은 칸을 꽉 채우고 높이는 비율이 정한다.
-      // 상자가 그림과 같은 비율이라 object-contain으로도 빈 띠가 생기지 않는다.
-      className="no-select h-auto w-full rounded-[10px] object-contain"
-    />
+    <Reveal delay={delay}>
+      <Image
+        src={img.src}
+        // 히어로에서 이미 프로젝트를 설명했으므로 본문 이미지는 장식 취급
+        alt=""
+        aria-hidden
+        width={img.width}
+        height={img.height}
+        draggable={false}
+        sizes={sizes}
+        quality={90}
+        // w-full + h-auto: 폭은 칸을 꽉 채우고 높이는 비율이 정한다.
+        // 상자가 그림과 같은 비율이라 object-contain으로도 빈 띠가 생기지 않는다.
+        // block: 이제 그리드·flex 항목은 Reveal 상자이고 이미지는 그 안에 든다. inline 그대로면
+        // 글자 기준선 아래 틈만큼 상자가 길어진다.
+        className="no-select block h-auto w-full rounded-[10px] object-contain"
+      />
+    </Reveal>
   );
 }
 
@@ -318,7 +353,12 @@ function NaturalGallery({ items }: { items: (GalleryImage | GalleryRow)[] }) {
         return (
           <div key={i} className="grid grid-cols-2 items-center gap-2 md:gap-3">
             {row.images.map((img, j) => (
-              <NaturalImage key={j} img={img} sizes="(max-width: 768px) 50vw, 45vw" />
+              <NaturalImage
+                key={j}
+                img={img}
+                sizes="(max-width: 768px) 50vw, 45vw"
+                delay={j * STAGGER}
+              />
             ))}
           </div>
         );
@@ -359,12 +399,40 @@ function toSegments(items: GalleryItem[]) {
  * 맨 앞에 오는 문단은 바로 위 소개 문단에 이어지는 글이라 이미지 사이 여백(6vh) 대신
  * 빈 줄 하나만큼(1.9em = 줄 간격 한 줄)만 띄운다. 소개 문단 섹션은 이 경우 아래 패딩을
  * 두지 않는다 (work/[id]/page.tsx) — 패딩은 마진과 상쇄되지 않아 그대로 더해지기 때문이다.
+ *
+ * chapter가 있으면(문단이 둘 이상인 프로젝트 — KBS의 편성 셋처럼) 문단이 챕터의 첫머리가 된다.
+ * 번호(01, 02 …)와 오른쪽 끝까지 뻗는 머리카락 선을 문단 위에 얹고, 위 여백도 이미지 사이
+ * 여백의 두 배로 벌려 앞 챕터가 끝나고 다음 챕터가 시작된다는 게 보이게 한다.
+ * 맨 앞 챕터는 선이 소개 문단에 붙으면 답답하므로 빈 줄 대신 이미지 사이 여백만큼 띄운다.
+ * 번호는 메타 라벨(work/[id]/page.tsx)과 같은 자간·옅은 색 계열이고 크기만 조금 키웠다.
  */
-function Paragraph({ text, first }: { text: string; first: boolean }) {
+function Paragraph({
+  text,
+  first,
+  chapter,
+}: {
+  text: string;
+  first: boolean;
+  chapter?: number;
+}) {
+  if (chapter === undefined) {
+    return (
+      <p className={`${PROSE_W} ${BODY_TEXT} ${first ? "mt-[1.9em]" : "mt-[6vh]"} mb-[6vh]`}>
+        {text}
+      </p>
+    );
+  }
+
   return (
-    <p className={`${PROSE_W} ${BODY_TEXT} ${first ? "mt-[1.9em]" : "mt-[6vh]"} mb-[6vh]`}>
-      {text}
-    </p>
+    <div className={`${PROSE_W} ${first ? "mt-[6vh]" : "mt-[12vh]"} mb-[6vh]`}>
+      <div className="mb-5 flex items-center gap-4" aria-hidden>
+        <span className="text-[11px] font-semibold tabular-nums tracking-[0.16em] text-ink/40">
+          {String(chapter).padStart(2, "0")}
+        </span>
+        <span className="h-px flex-1 bg-ink/10" />
+      </div>
+      <p className={BODY_TEXT}>{text}</p>
+    </div>
   );
 }
 
@@ -379,11 +447,21 @@ export default function ProjectGallery({
 
   // 문단이 하나라도 있으면 이미지 묶음마다 배치를 따로 돌린다 — 묶음 안에서는 아래와 같은 규칙이다
   if (segments.length > 1) {
+    // 문단이 둘 이상이면 본문이 여러 챕터로 나뉜 것으로 보고 문단마다 번호를 붙인다.
+    // 문단이 하나뿐인 프로젝트는 나눌 게 없으므로 번호 없이 그대로 둔다.
+    const chaptered = segments.filter((seg) => seg.kind === "text").length > 1;
+    let chapter = 0;
+
     return (
       <div>
         {segments.map((seg, i) =>
           seg.kind === "text" ? (
-            <Paragraph key={i} text={seg.text} first={i === 0} />
+            <Paragraph
+              key={i}
+              text={seg.text}
+              first={i === 0}
+              chapter={chaptered ? ++chapter : undefined}
+            />
           ) : (
             <div key={i} className={i === segments.length - 1 ? "" : "mb-[6vh]"}>
               <ProjectGallery images={seg.items} layout={layout} />
@@ -438,7 +516,7 @@ export default function ProjectGallery({
           return (
             <div key={i} className={`grid grid-cols-2 ${gap} ${spacing}`}>
               <Frame img={a} className="aspect-[4/3]" />
-              <Frame img={b} className="aspect-[4/3]" />
+              <Frame img={b} className="aspect-[4/3]" delay={STAGGER} />
             </div>
           );
         }
@@ -456,7 +534,11 @@ export default function ProjectGallery({
                 img={bigFirst ? a : b}
                 className={`aspect-[16/9] col-span-2 ${bigFirst ? "" : "order-2"}`}
               />
-              <Frame img={bigFirst ? b : a} className={`h-full ${bigFirst ? "" : "order-1"}`} />
+              <Frame
+                img={bigFirst ? b : a}
+                className={`h-full ${bigFirst ? "" : "order-1"}`}
+                delay={STAGGER}
+              />
             </div>
           );
         }
@@ -464,8 +546,8 @@ export default function ProjectGallery({
         return (
           <div key={i} className={`grid grid-cols-3 gap-3 md:gap-4 ${spacing}`}>
             <Frame img={a} className="aspect-[3/4]" />
-            <Frame img={b} className="aspect-[3/4]" />
-            <Frame img={c} className="aspect-[3/4]" />
+            <Frame img={b} className="aspect-[3/4]" delay={STAGGER} />
+            <Frame img={c} className="aspect-[3/4]" delay={STAGGER * 2} />
           </div>
         );
       })}
