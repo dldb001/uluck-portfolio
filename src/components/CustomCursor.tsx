@@ -141,12 +141,16 @@ export default function CustomCursor() {
     document.addEventListener("mouseenter", show);
     // 탭 전환 등으로 포커스를 잃는 경우도 동일하게 처리
     window.addEventListener("blur", hide);
+    // 유튜브 iframe에 들어갈 때(YouTubeEmbed) — 그 안에서는 좌표가 안 오므로 점을 숨긴다.
+    // 밖으로 나오면 다음 pointermove가 다시 켠다.
+    window.addEventListener("cursor:hide", hide);
 
     return () => {
       window.removeEventListener("pointermove", move);
       document.removeEventListener("mouseleave", hide);
       document.removeEventListener("mouseenter", show);
       window.removeEventListener("blur", hide);
+      window.removeEventListener("cursor:hide", hide);
     };
   }, [enabled, x, y]);
 

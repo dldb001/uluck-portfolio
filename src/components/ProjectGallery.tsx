@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import {
   isGalleryRow,
   isGalleryText,
+  isGalleryVideo,
   type GalleryImage,
   type GalleryItem,
   type GalleryLayout,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/types";
 import { BODY_TEXT, PROSE_W } from "@/lib/styles";
 import Reveal from "./Reveal";
+import YouTubeEmbed from "./YouTubeEmbed";
 
 /**
  * 상세 페이지 본문 이미지 그리드.
@@ -368,19 +370,28 @@ function NaturalGallery({ items }: { items: (GalleryImage | GalleryRow)[] }) {
 }
 
 /**
- * 항목 목록을 문단 경계로 나눈다 — [이미지들] 문단 [이미지들] ... 순서를 그대로 보존한다.
- * 문단이 없으면 이미지 묶음 하나뿐이다. 직접 지정한 행(GalleryRow)은 경계가 아니라
+ * 항목 목록을 문단·영상 경계로 나눈다 — [이미지들] 문단 영상 [이미지들] ... 순서를 그대로 보존한다.
+ * 경계가 없으면 이미지 묶음 하나뿐이다. 직접 지정한 행(GalleryRow)은 경계가 아니라
  * 이미지 묶음 안에 그대로 들어간다 — 행을 어떻게 다룰지는 배치가 정한다.
  */
 function toSegments(items: GalleryItem[]) {
   const segments: (
     | { kind: "images"; items: (GalleryImage | GalleryRow)[] }
     | { kind: "text"; text: string }
+    | { kind: "video"; videos: { youtube: string; poster?: string }[] }
   )[] = [];
 
   for (const item of items) {
     if (isGalleryText(item)) {
       segments.push({ kind: "text", text: item.text });
+      continue;
+    }
+    if (isGalleryVideo(item)) {
+      // 영상이 연달아 오면 한 행으로 묶는다 (VideoRow 참고)
+      const prev = segments[segments.length - 1];
+      const video = { youtube: item.youtube, poster: item.poster };
+      if (prev && prev.kind === "video") prev.videos.push(video);
+      else segments.push({ kind: "video", videos: [video] });
       continue;
     }
     const open = segments[segments.length - 1];
@@ -436,6 +447,36 @@ function Paragraph({
   );
 }
 
+/**
+ * 그리드 사이 영상 행 — 한 편이면 본문 영역 전체 폭의 16:9, 연달아 온 여러 편이면 같은 폭으로 나란히.
+ *
+ * 열 수는 편수를 그대로 따르므로 FixedRow처럼 인라인 스타일로 넘긴다. 칸 사이 여백도 FixedRow와 같다.
+ *
+ * 아래 여백은 natural 배치의 행 사이 간격(4vh)과 같다. 영상은 보통 편성 문단 바로 뒤, 그 편성의
+ * 스타일프레임 바로 앞에 오므로 뒤의 이미지들과 한 덩어리로 읽히게 이미지 행 간격만 둔다.
+ * 맨 끝에 오면 여백을 두지 않는다 (상세 페이지 섹션의 아래 패딩이 대신한다).
+ */
+function VideoRow({
+  videos,
+  last,
+}: {
+  videos: { youtube: string; poster?: string }[];
+  last: boolean;
+}) {
+  return (
+    <div
+      className={`grid gap-3 md:gap-4 ${last ? "" : "mb-[4vh]"}`}
+      style={{ gridTemplateColumns: `repeat(${videos.length}, minmax(0, 1fr))` }}
+    >
+      {videos.map((v, i) => (
+        <Reveal key={v.youtube} delay={i * STAGGER}>
+          <YouTubeEmbed id={v.youtube} poster={v.poster} />
+        </Reveal>
+      ))}
+    </div>
+  );
+}
+
 export default function ProjectGallery({
   images,
   layout = "rhythm",
@@ -462,6 +503,8 @@ export default function ProjectGallery({
               first={i === 0}
               chapter={chaptered ? ++chapter : undefined}
             />
+          ) : seg.kind === "video" ? (
+            <VideoRow key={i} videos={seg.videos} last={i === segments.length - 1} />
           ) : (
             <div key={i} className={i === segments.length - 1 ? "" : "mb-[6vh]"}>
               <ProjectGallery images={seg.items} layout={layout} />
@@ -473,6 +516,7 @@ export default function ProjectGallery({
   }
 
   const only = segments[0];
+  if (only?.kind === "video") return <VideoRow videos={only.videos} last />;
   if (!only || only.kind !== "images") return null;
 
   if (layout === "natural") return <NaturalGallery items={only.items} />;

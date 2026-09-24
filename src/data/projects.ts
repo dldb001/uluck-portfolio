@@ -324,10 +324,14 @@ const luckyFrames = ["hero", "1", "2", "3", "4"].map(
 );
 
 /** 2_page는 hero를 뺀 1~6이 본문이다 */
-const luckyGallery: GalleryImage[] = ["1", "2", "3", "4", "5", "6"].map((n) => ({
-  src: `${LUCKY_DIR}/2_page/optimized/${n}.jpg`,
-  ...luckyPageManifest[`${n}.jpg` as keyof typeof luckyPageManifest],
-}));
+// 맨 위에 본편 영상(유튜브 일부 공개)을 전체 폭으로 두고, 그 아래로 스타일프레임이 이어진다
+const luckyGallery: GalleryItem[] = [
+  { youtube: "mAgUeNUCu14" },
+  ...["1", "2", "3", "4", "5", "6"].map((n) => ({
+    src: `${LUCKY_DIR}/2_page/optimized/${n}.jpg`,
+    ...luckyPageManifest[`${n}.jpg` as keyof typeof luckyPageManifest],
+  })),
+];
 
 const GARDEN_DIR = "/images/projects/8_Lucky Garden";
 
@@ -356,10 +360,14 @@ const gardenFrames = ["hero", "1", "2", "3", "4"].map(
 );
 
 /** 2_page는 hero를 뺀 1~13이 본문이다 */
-const gardenGallery: GalleryImage[] = Array.from({ length: 13 }, (_, i) => `${i + 1}`).map((n) => ({
-  src: `${GARDEN_DIR}/2_page/optimized/${n}.jpg`,
-  ...gardenPageManifest[`${n}.jpg` as keyof typeof gardenPageManifest],
-}));
+// 맨 위에 본편 영상(유튜브 일부 공개)을 전체 폭으로 두고, 그 아래로 스타일프레임이 이어진다
+const gardenGallery: GalleryItem[] = [
+  { youtube: "tnGTk9MSWVQ" },
+  ...Array.from({ length: 13 }, (_, i) => `${i + 1}`).map((n) => ({
+    src: `${GARDEN_DIR}/2_page/optimized/${n}.jpg`,
+    ...gardenPageManifest[`${n}.jpg` as keyof typeof gardenPageManifest],
+  })),
+];
 
 const LOTTE_DIR = "/images/projects/9_LOTTE Dept. Nowon VP Film";
 
@@ -381,11 +389,28 @@ const LOTTE_THUMB_DIR = `${LOTTE_DIR}/1_thumbnail/optimized`;
 
 const lotteFrames = ["hero", "1", "2", "3"].map((n) => `${LOTTE_THUMB_DIR}/${n}.jpg`);
 
-/** 2_page는 hero를 뺀 1~16이 본문이다 */
-const lotteGallery: GalleryImage[] = Array.from({ length: 16 }, (_, i) => `${i + 1}`).map((n) => ({
+/** 2_page 한 장 — 크기는 manifest에서 온다 */
+const lotteImage = (n: number): GalleryImage => ({
   src: `${LOTTE_DIR}/2_page/optimized/${n}.jpg`,
   ...lottePageManifest[`${n}.jpg` as keyof typeof lottePageManifest],
-}));
+});
+
+/**
+ * 2_page는 hero를 뺀 1~16이 본문이다 — 1~13은 영상 스타일프레임(1.25:1), 14~16은 마네킹 앞
+ * 디스플레이 설치 목업(16:9)이다.
+ *
+ * 영상은 유튜브(일부 공개)에 올린 세 편이다 — 디스플레이 면마다 한 편씩(base · front · side).
+ *   base          메인 면. 맨 위에 전체 폭으로 두고 그 아래로 스타일프레임 1~13이 이어진다
+ *   front · side  나머지 두 면. 설치 목업(14~16) 바로 앞에 둘을 나란히 한 행으로 둔다
+ *                 (연달아 오는 영상은 ProjectGallery가 한 행으로 묶는다)
+ */
+const lotteGallery: GalleryItem[] = [
+  { youtube: "HDk9pougXyE" }, // base
+  ...Array.from({ length: 13 }, (_, i) => lotteImage(i + 1)),
+  { youtube: "Ln_nSddcqjw" }, // front
+  { youtube: "6HTgq9GdVLU" }, // side
+  ...[14, 15, 16].map(lotteImage),
+];
 
 const LG_DIR = "/images/projects/10_LG Brand Expressions";
 
@@ -406,10 +431,14 @@ const lgFrames = ["hero", "1", "2", "3", "4"].map(
 );
 
 /** 2_page는 hero를 뺀 1~15가 본문이다 */
-const lgGallery: GalleryImage[] = Array.from({ length: 15 }, (_, i) => `${i + 1}`).map((n) => ({
-  src: `${LG_DIR}/2_page/optimized/${n}.jpg`,
-  ...lgPageManifest[`${n}.jpg` as keyof typeof lgPageManifest],
-}));
+// 맨 위에 본편 영상(유튜브 일부 공개)을 전체 폭으로 두고, 그 아래로 스타일프레임이 이어진다
+const lgGallery: GalleryItem[] = [
+  { youtube: "RPC7aB-hX0I" },
+  ...Array.from({ length: 15 }, (_, i) => `${i + 1}`).map((n) => ({
+    src: `${LG_DIR}/2_page/optimized/${n}.jpg`,
+    ...lgPageManifest[`${n}.jpg` as keyof typeof lgPageManifest],
+  })),
+];
 
 const XMAS_DIR = "/images/projects/11_Lucky Christmas Lounge";
 
@@ -433,10 +462,14 @@ const xmasFrames = ["hero", "1", "2", "3"].map(
 );
 
 /** 2_page는 hero를 뺀 1~5가 본문이다 */
-const xmasGallery: GalleryImage[] = Array.from({ length: 5 }, (_, i) => `${i + 1}`).map((n) => ({
-  src: `${XMAS_DIR}/2_page/optimized/${n}.jpg`,
-  ...xmasPageManifest[`${n}.jpg` as keyof typeof xmasPageManifest],
-}));
+// 맨 위에 본편 영상(유튜브 일부 공개)을 전체 폭으로 두고, 그 아래로 스타일프레임이 이어진다
+const xmasGallery: GalleryItem[] = [
+  { youtube: "8IdQtDpppa4" },
+  ...Array.from({ length: 5 }, (_, i) => `${i + 1}`).map((n) => ({
+    src: `${XMAS_DIR}/2_page/optimized/${n}.jpg`,
+    ...xmasPageManifest[`${n}.jpg` as keyof typeof xmasPageManifest],
+  })),
+];
 
 const IBK_DIR = "/images/projects/12_IBK memorial hall";
 
@@ -473,11 +506,13 @@ const GS_DIR = "/images/projects/13_GS_Homeshopping";
  *                (카드 최대 408px, 레티나 816px보다 크므로 축소 없이 그대로)
  *   2_page       q92 — 2304x1296(16:9) 한 장뿐이라 100vw 히어로용으로 원본 폭 그대로 둔다
  *
- * 그래서 gallery 필드는 두지 않는다. 본문에 깔 장이 남지 않아서다 — 상세 페이지가 썸네일을
- * 반복해 자리만 잡아 주므로(work/[id]/page.tsx 참고) 본문은 임시 화면이다.
- * 2_page에 본문 이미지가 더 들어오면 KBS처럼 optimized/ + manifest로 gallery를 채우면 된다.
+ * 본문에 깔 이미지가 남지 않으므로 본문은 본편 영상(유튜브 일부 공개) 한 편뿐이다 — gsGallery 참고.
+ * 2_page에 본문 이미지가 더 들어오면 KBS처럼 optimized/ + manifest로 영상 뒤에 이어 붙이면 된다.
  */
 const gsFrames = ["hero", "1", "2"].map((n) => `${GS_DIR}/1_thumbnail/optimized/${n}.jpg`);
+
+/** 본문 — 본편 영상 한 편 (GalleryVideo · YouTubeEmbed 참고) */
+const gsGallery: GalleryItem[] = [{ youtube: "UUMlDy8b3zM" }];
 
 const KBS_DIR = "/images/projects/14_KBS NEWS OAP";
 
@@ -523,10 +558,13 @@ function kbsSet(from: number, to: number): GalleryItem[] {
 }
 
 /**
- * 상세 페이지 본문 — 기기 목업(0) 아래로 편성 셋이 [문단 → 스타일프레임] 순서로 이어진다.
+ * 상세 페이지 본문 — 기기 목업(0) 아래로 편성 셋이 [문단 → 영상 → 스타일프레임] 순서로 이어진다.
  *
  * 0은 2.87:1이라 natural 배치에서 자기 행을 통째로 쓴다 (뉴스라인 · 7 · 뉴스특보를 한 장에
  * 담은 그림이라 본문 맨 위에 크게 둔다). 1~7이 뉴스라인, 8~14가 숫자 7, 15~20이 뉴스특보다.
+ *
+ * 영상은 유튜브(일부 공개)에 올린 각 편성의 OAP 본편이다. 문단 바로 뒤에서 전체 폭 16:9로
+ * 놓이고, 누르기 전까지는 포스터만 받는다 (GalleryVideo · YouTubeEmbed 참고).
  */
 const kbsGallery: GalleryItem[] = [
   kbsImage(0),
@@ -538,6 +576,7 @@ const kbsGallery: GalleryItem[] = [
       "지구가 떠오릅니다. 지구를 이루던 맵이 입체적으로\n" +
       "분해되며 회전하고 뉴스라인 타이틀의 빛으로 정립됩니다.",
   },
+  { youtube: "m5J-ekZAuJ8" },
   ...kbsSet(1, 7),
   {
     text:
@@ -545,6 +584,7 @@ const kbsGallery: GalleryItem[] = [
       "모서리가 위로 솟으며 입체로 돌출됩니다.\n" +
       "한 바퀴 회전하는 사이 숫자 7이 완성됩니다.",
   },
+  { youtube: "-qUOfqt4DGg" },
   ...kbsSet(8, 14),
   {
     text:
@@ -553,6 +593,7 @@ const kbsGallery: GalleryItem[] = [
       "두 갈래가 함께 돌다 하나로 합쳐지며 화면 전체로 번집니다.\n" +
       "소식이 세상에 닿는 순간을 빛의 확산으로 표현했습니다.",
   },
+  { youtube: "HSNvni2FGq8" },
   ...kbsSet(15, 20),
 ];
 
@@ -572,13 +613,17 @@ const colloquiumFrames = ["hero", "1", "2", "3"].map(
   (n) => `${COLLOQUIUM_DIR}/1_thumbnail/optimized/${n}.jpg`,
 );
 
-/** 2_page는 hero를 뺀 1~10이 본문이다 */
-const colloquiumGallery: GalleryImage[] = Array.from({ length: 10 }, (_, i) => `${i + 1}`).map(
-  (n) => ({
+/**
+ * 2_page는 hero를 뺀 1~10이 본문이다.
+ * 맨 위에 본편 영상(유튜브 일부 공개)을 전체 폭으로 두고, 그 아래로 스타일프레임이 trio로 이어진다.
+ */
+const colloquiumGallery: GalleryItem[] = [
+  { youtube: "AZz_KeED0ks" },
+  ...Array.from({ length: 10 }, (_, i) => `${i + 1}`).map((n) => ({
     src: `${COLLOQUIUM_DIR}/2_page/optimized/${n}.jpg`,
     ...colloquiumPageManifest[`${n}.jpg` as keyof typeof colloquiumPageManifest],
-  }),
-);
+  })),
+];
 
 /**
  * 16~19번은 네 프로젝트가 같은 모양이다 — 썸네일은 900x1200(3:4), 상세는 2_page/hero 파노라마 +
@@ -590,8 +635,8 @@ const colloquiumGallery: GalleryImage[] = Array.from({ length: 10 }, (_, i) => `
  *   2_page       q92 — 본문은 1920px 상한, 히어로만 원본 폭 3840
  *
  * 히어로만 따로 뽑은 건 3.06:1 파노라마가 100vw로 그려지기 때문이다. 본문은 16:9뿐이라
- * 파노라마 판정(2:1 이상)에 걸리는 장이 없고, 그래서 네 프로젝트 모두 galleryLayout이 "trio"다
- * (전부 같은 비율이고 장수가 많을 때는 강약을 주는 기본 배치보다 규칙적인 편이 낫다).
+ * 파노라마 판정(2:1 이상)에 걸리는 장이 없다. BTS · MAMA는 galleryLayout "trio"로 규칙적으로 늘어놓고,
+ * Samsung Wallet · LIVSMED는 sizedRows로 행을 직접 짜 크기 강약을 준다 (natural — 잘리는 곳 없음).
  *
  * 크기는 manifest.json에서 오므로 이미지를 다시 뽑으면 자동으로 따라 바뀐다.
  */
@@ -602,10 +647,39 @@ const btsFrames = ["hero", "1", "2", "3"].map(
 );
 
 /** 2_page는 hero를 뺀 1~9가 본문이다. 원본이 1400x788이라 1920 상한에 걸리지 않고 그대로 나온다 */
-const btsGallery: GalleryImage[] = Array.from({ length: 9 }, (_, i) => `${i + 1}`).map((n) => ({
-  src: `${BTS_DIR}/2_page/optimized/${n}.jpg`,
-  ...btsPageManifest[`${n}.jpg` as keyof typeof btsPageManifest],
-}));
+// 맨 위에 본편 영상(유튜브 일부 공개)을 전체 폭으로 두고, 그 아래로 스타일프레임이 이어진다
+const btsGallery: GalleryItem[] = [
+  { youtube: "MKdGp1I_rMA" },
+  ...Array.from({ length: 9 }, (_, i) => `${i + 1}`).map((n) => ({
+    src: `${BTS_DIR}/2_page/optimized/${n}.jpg`,
+    ...btsPageManifest[`${n}.jpg` as keyof typeof btsPageManifest],
+  })),
+];
+
+/**
+ * 같은 비율(16:9)뿐인 본문에 크기 강약을 주는 행 구성 — natural 배치용.
+ *
+ * counts의 숫자대로 앞에서부터 잘라 행을 만든다: 1이면 낱장(16:9는 NATURAL_SOLO_RATIO를 넘어
+ * 전체 폭을 꽉 채운다), 2·3이면 그 장수의 행(GalleryRow — 칸 폭이 같아 높이도 맞는다).
+ * 모든 장이 같은 비율이라 FixedRow의 object-cover가 잘라낼 게 없어 어디도 잘리지 않는다.
+ * (기본 rhythm 배치는 3:4 · 4:3 틀에 넣어 16:9 스타일프레임의 좌우가 크게 잘리므로 쓰지 않는다)
+ *
+ * counts를 다 쓰면 처음부터 다시 돈다. 마지막에 남은 장이 모자라면 남은 만큼만 한 행이 된다.
+ */
+function sizedRows(images: GalleryImage[], counts: number[]): GalleryItem[] {
+  const items: GalleryItem[] = [];
+  let i = 0;
+  let c = 0;
+
+  while (i < images.length) {
+    const row = images.slice(i, i + counts[c % counts.length]);
+    items.push(row.length === 1 ? row[0] : { row });
+    i += row.length;
+    c += 1;
+  }
+
+  return items;
+}
 
 const WALLET_DIR = "/images/projects/17_Samsung Wallet";
 
@@ -613,11 +687,36 @@ const walletFrames = ["hero", "1", "2"].map(
   (n) => `${WALLET_DIR}/1_thumbnail/optimized/${n}.jpg`,
 );
 
-/** 2_page는 hero를 뺀 1~12가 본문이다. 원본 3840x2160이 1920으로 줄어든다 */
-const walletGallery: GalleryImage[] = Array.from({ length: 12 }, (_, i) => `${i + 1}`).map((n) => ({
+/** 2_page 한 장 — 원본 3840x2160이 1920으로 줄어든다. 크기는 manifest에서 온다 */
+const walletImage = (n: number): GalleryImage => ({
   src: `${WALLET_DIR}/2_page/optimized/${n}.jpg`,
   ...walletPageManifest[`${n}.jpg` as keyof typeof walletPageManifest],
-}));
+});
+
+/** from~to 번호를 차례로 — 한 편의 스타일프레임 묶음 */
+const walletRange = (from: number, to: number) =>
+  Array.from({ length: to - from + 1 }, (_, i) => walletImage(from + i));
+
+/**
+ * 상세 페이지 본문 — 영상 세 편이 각각 [영상 → 그 편의 스타일프레임] 순서로 이어진다.
+ *
+ * 2_page 번호는 편마다 묶여 있지만 영상 순서(Main → Coverage → Security)와 다르다:
+ *   1~5   Main      지갑 타일 · "A smart wallet is already in your Galaxy." · 로고
+ *   9~12  Coverage  결제 가능 표지판이 놓인 무대
+ *   6~8   Security  자물쇠 · Secured by Knox
+ * 그래서 번호 순이 아니라 영상 순서대로 6~8과 9~12의 자리를 바꿔 놓는다.
+ *
+ * 영상은 유튜브(일부 공개)에 올린 각 편이다 (GalleryVideo · YouTubeEmbed 참고).
+ * 이미지 행은 sizedRows로 전체 폭 1장과 2·3열을 섞어 강약을 준다 — 전부 16:9라 잘리지 않는다.
+ */
+const walletGallery: GalleryItem[] = [
+  { youtube: "llTLYkuPYKo" }, // Main
+  ...sizedRows(walletRange(1, 5), [1, 2, 2]),
+  { youtube: "RdY2Qh-lCEQ" }, // Coverage
+  ...sizedRows(walletRange(9, 12), [1, 3]),
+  { youtube: "kJssL6XAc64" }, // Security
+  ...sizedRows(walletRange(6, 8), [1, 2]),
+];
 
 const MAMA_DIR = "/images/projects/18_CJ MAMA 2024";
 
@@ -626,10 +725,14 @@ const mamaFrames = ["hero", "1", "2", "3"].map(
 );
 
 /** 2_page는 hero를 뺀 1~9가 본문이다 */
-const mamaGallery: GalleryImage[] = Array.from({ length: 9 }, (_, i) => `${i + 1}`).map((n) => ({
-  src: `${MAMA_DIR}/2_page/optimized/${n}.jpg`,
-  ...mamaPageManifest[`${n}.jpg` as keyof typeof mamaPageManifest],
-}));
+// 맨 위에 본편 영상(유튜브 일부 공개)을 전체 폭으로 두고, 그 아래로 스타일프레임이 이어진다
+const mamaGallery: GalleryItem[] = [
+  { youtube: "7BISfFjaTtE" },
+  ...Array.from({ length: 9 }, (_, i) => `${i + 1}`).map((n) => ({
+    src: `${MAMA_DIR}/2_page/optimized/${n}.jpg`,
+    ...mamaPageManifest[`${n}.jpg` as keyof typeof mamaPageManifest],
+  })),
+];
 
 const LIVSMED_DIR = "/images/projects/19_LIVSMED";
 
@@ -640,8 +743,14 @@ const livsmedFrames = ["hero", "1", "2", "3", "4"].map(
 /**
  * 2_page는 hero를 뺀 나머지가 본문인데 번호가 1~11로 이어지지 않는다 —
  * 8이 8-1~8-5로 쪼개져 있고 9는 없다. 범위로 만들지 않고 파일명 그대로 적는다.
+ *
+ * 행 구성(14장): [1] [2 3] [4 5 6] [7] [8-1 8-2 8-3] [8-4 8-5] [10 11]
+ * 8-1~8-5는 한 장면의 연속이라 다른 번호와 섞지 않고 3 + 2 두 행으로 묶어 둔다.
+ *
+ * 맨 위에는 본편 영상(유튜브 일부 공개)을 전체 폭으로 둔다 — 소개 문단 바로 다음에 영상을 먼저 보고
+ * 스타일프레임으로 내려가는 흐름이다 (GalleryVideo · YouTubeEmbed 참고).
  */
-const livsmedGallery: GalleryImage[] = [
+const livsmedImages: GalleryImage[] = [
   "1",
   "2",
   "3",
@@ -661,6 +770,11 @@ const livsmedGallery: GalleryImage[] = [
   ...livsmedPageManifest[`${n}.jpg` as keyof typeof livsmedPageManifest],
 }));
 
+const livsmedGallery: GalleryItem[] = [
+  { youtube: "hITpa88eXTg" },
+  ...sizedRows(livsmedImages, [1, 2, 3, 1, 3, 2, 2]),
+];
+
 const IFEZ_DIR = "/images/projects/20_IFEZ Anamorphic";
 
 const ifezFrames = ["hero", "1", "2", "3", "4"].map(
@@ -668,10 +782,14 @@ const ifezFrames = ["hero", "1", "2", "3", "4"].map(
 );
 
 /** 2_page는 hero를 뺀 1~8이 본문이다 */
-const ifezGallery: GalleryImage[] = Array.from({ length: 8 }, (_, i) => `${i + 1}`).map((n) => ({
-  src: `${IFEZ_DIR}/2_page/optimized/${n}.jpg`,
-  ...ifezPageManifest[`${n}.jpg` as keyof typeof ifezPageManifest],
-}));
+// 맨 위에 본편 영상(유튜브 일부 공개)을 전체 폭으로 두고, 그 아래로 스타일프레임이 이어진다
+const ifezGallery: GalleryItem[] = [
+  { youtube: "tBr4ZULzfgs" },
+  ...Array.from({ length: 8 }, (_, i) => `${i + 1}`).map((n) => ({
+    src: `${IFEZ_DIR}/2_page/optimized/${n}.jpg`,
+    ...ifezPageManifest[`${n}.jpg` as keyof typeof ifezPageManifest],
+  })),
+];
 
 /**
  * TODO: 실제 소개 문단으로 교체.
@@ -864,7 +982,8 @@ export const projects: Project[] = [
     thumbnail: gsFrames[0],
     thumbnails: gsFrames,
     hero: `${GS_DIR}/2_page/optimized/1.jpg`,
-    // gallery 없음 — 2_page의 한 장을 히어로로 썼다. 본문은 썸네일 반복으로 자리만 잡는다
+    // 2_page의 한 장은 히어로로 썼고, 본문은 본편 영상 한 편이다
+    gallery: gsGallery,
     category: ["3D", "MOTIONGRAPHIC"],
     href: "/work/gs-homeshopping",  },
   {
@@ -929,7 +1048,8 @@ export const projects: Project[] = [
     thumbnails: walletFrames,
     hero: `${WALLET_DIR}/2_page/optimized/hero.jpg`,
     gallery: walletGallery,
-    galleryLayout: "trio",
+    // 본문이 전부 16:9 — 행을 직접 짜서(sizedRows) 크기 강약을 주되 잘리지 않게 natural로 놓는다
+    galleryLayout: "natural",
     category: ["3D", "MOTIONGRAPHIC"],
     href: "/work/samsung-wallet",  },
   {
@@ -959,7 +1079,8 @@ export const projects: Project[] = [
     thumbnails: livsmedFrames,
     hero: `${LIVSMED_DIR}/2_page/optimized/hero.jpg`,
     gallery: livsmedGallery,
-    galleryLayout: "trio",
+    // 본문이 전부 16:9 — 행을 직접 짜서(sizedRows) 크기 강약을 주되 잘리지 않게 natural로 놓는다
+    galleryLayout: "natural",
     category: ["3D", "MOTIONGRAPHIC"],
     href: "/work/livsmed",  },
   {

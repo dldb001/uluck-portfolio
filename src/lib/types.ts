@@ -50,13 +50,32 @@ export interface GalleryRow {
 }
 
 /**
- * 본문 그리드의 항목 하나 — 이미지 · 문단 · 직접 지정한 행.
- * 문단은 이미지 흐름을 끊는 경계가 된다: 앞뒤 이미지들은 각각 따로 배치되고 그 사이에 글이 선다.
+ * 본문 그리드 사이에 끼워 넣는 유튜브 영상 (YouTubeEmbed 참고).
+ *
+ * 처음에는 포스터 + 재생 버튼만 그리고, 누른 뒤에야 유튜브 iframe을 불러온다(facade).
+ * 플레이어 스크립트가 무거워서, 영상이 여러 개인 페이지도 첫 로딩이 이미지 페이지와 같게 하려는 것.
+ *
+ * 문단처럼 이미지 흐름을 끊는 경계가 되고, 본문 영역 전체 폭을 쓰는 16:9 한 행으로 놓인다.
  */
-export type GalleryItem = GalleryImage | GalleryText | GalleryRow;
+export interface GalleryVideo {
+  /** 유튜브 영상 ID — youtu.be/ 뒤, ?si= 앞 부분 */
+  youtube: string;
+  /** 직접 지정할 포스터 경로 — 없으면 유튜브 썸네일(maxresdefault)을 쓴다 */
+  poster?: string;
+}
+
+/**
+ * 본문 그리드의 항목 하나 — 이미지 · 문단 · 직접 지정한 행 · 영상.
+ * 문단과 영상은 이미지 흐름을 끊는 경계가 된다: 앞뒤 이미지들은 각각 따로 배치되고 그 사이에 선다.
+ */
+export type GalleryItem = GalleryImage | GalleryText | GalleryRow | GalleryVideo;
 
 export function isGalleryText(item: GalleryItem): item is GalleryText {
   return "text" in item;
+}
+
+export function isGalleryVideo(item: GalleryItem): item is GalleryVideo {
+  return "youtube" in item;
 }
 
 export function isGalleryRow(item: GalleryItem): item is GalleryRow {
