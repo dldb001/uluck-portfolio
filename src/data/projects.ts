@@ -570,6 +570,7 @@ const kbsGallery: GalleryItem[] = [
   kbsImage(0),
   // 줄바꿈 지점은 정해진 대로다 — "\n"이 그 자리에서 줄을 나눈다 (GalleryText 참고)
   {
+    label: "뉴스라인",
     text:
       "뉴스라인은 세계의 소식을 전하는 편성입니다.\n" +
       "빛의 라인이 원을 그리며 생겨나고, 두 원이 겹치는 자리에서\n" +
@@ -579,6 +580,7 @@ const kbsGallery: GalleryItem[] = [
   { youtube: "m5J-ekZAuJ8" },
   ...kbsSet(1, 7),
   {
+    label: "7시 뉴스",
     text:
       "빛의 라인이 7의 형상을 그리다가,\n" +
       "모서리가 위로 솟으며 입체로 돌출됩니다.\n" +
@@ -587,6 +589,7 @@ const kbsGallery: GalleryItem[] = [
   { youtube: "-qUOfqt4DGg" },
   ...kbsSet(8, 14),
   {
+    label: "뉴스특보",
     text:
       "뉴스특보는 예고 없이 전해지는 긴급 편성입니다.\n" +
       "빛이 화면 중앙에서 퍼져 주변을 비추고,\n" +
@@ -791,14 +794,6 @@ const ifezGallery: GalleryItem[] = [
   })),
 ];
 
-/**
- * TODO: 실제 소개 문단으로 교체.
- * PDF 포트폴리오(PROJECT_DETAILS.md)에 항목이 없는 DELL S series BG와 LG Brand Expressions만 남았다.
- */
-const TODO_DESCRIPTION =
-  "TODO: 이 프로젝트의 배경과 역할, 사용한 도구와 결과를 한 단락으로 소개합니다. " +
-  "무엇을 만들었고 어떤 문제를 풀었는지, 작업에서 무엇을 맡았는지를 적어 주세요.";
-
 /** 그리드에 나오는 순서 그대로 — public/images/projects의 폴더 번호와 같다 */
 export const projects: Project[] = [
   {
@@ -881,10 +876,10 @@ export const projects: Project[] = [
     id: "lucky-spectrum",
     title: "Lucky Spectrum",
     client: "개인 프로젝트",
-    date: "2023.05 – 2023.07",
+    date: "2024.01 – 2024.03",
     contribution: "1인 · 전체 작업",
     description:
-      "스쳐 지나가는 도심 공간에 영상 속에서 변화하는 '뜻밖의 행운'의 순간을 포착할 수 있도록 연출한 개인 미디어아트 프로젝트입니다.",
+      "\"Lucky Spectrum\" 은 스펙트럼이라는 단어가 내포한 다양한 빛의 파장, 그로 인해 발생하는 굴절과 반사의 아름다움을 은유적으로 담아낸 작품입니다. 이 공간은 마치 빛이 선물처럼 흘러드는 찰나의 순간을 포착한 듯, 행운처럼 찾아오는 스펙트럼의 마법을 담고 있습니다.\n\n특히, 허공을 유영하는 신비로운 꽃의 형상은 마치 살아 있는 생명처럼 공간을 부유하며, 스펙트럼의 순간적인 아름다움을 시각화한 오브제로 기능합니다. Lucky Spectrum은 단순한 색채의 나열이 아닌, 감정과 운율이 깃든 빛의 경험을 이야기합니다. 자연과 건축, 예술과 빛이 조화롭게 어우러지는 이 공간은 단순히 시각적 아름다움을 넘어, 찰나의 기적 같은 '빛의 순간'을 은은하게 체험하게 합니다.",
     thumbnail: luckyFrames[0],
     thumbnails: luckyFrames,
     hero: `${LUCKY_DIR}/2_page/optimized/hero.jpg`,
@@ -898,7 +893,7 @@ export const projects: Project[] = [
     date: "2023.05 – 2023.07",
     contribution: "1인 · 전체 작업",
     description:
-      "스쳐 지나가는 도심 공간에 영상 속에서 변화하는 '뜻밖의 행운'의 순간을 포착할 수 있도록 연출한 개인 미디어아트 프로젝트입니다.",
+      "'Lucky Garden'은 교토의 한 카페 정원에서 우연히 받은 영감을 바탕으로 탄생한 작품입니다. 그림처럼 정갈한 일본식 정원에서 벚꽃이 피어나는 찰나의 순간을 마주하며, 행운을 발견하는 경험을 관람객에게 선사하고자 합니다. 절제된 공간미를 살린 조형적 레이아웃과 꽃이 주는 화사한 분위기를 통해, 긍정적이고 따뜻한 행운의 기운을 공간 속에 담아냅니다.",
     thumbnail: gardenFrames[0],
     thumbnails: gardenFrames,
     hero: `${GARDEN_DIR}/2_page/optimized/hero.jpg`,
@@ -909,10 +904,10 @@ export const projects: Project[] = [
     id: "lucky-christmas-lounge",
     title: "Lucky Christmas Lounge",
     client: "개인 프로젝트",
-    date: "2023.05 – 2023.07",
+    date: "2026.04 – 2026.06",
     contribution: "1인 · 전체 작업",
     description:
-      "스쳐 지나가는 도심 공간에 영상 속에서 변화하는 '뜻밖의 행운'의 순간을 포착할 수 있도록 연출한 개인 미디어아트 프로젝트입니다.",
+      "\"Lucky Christmas Lounge\"는 크리스마스의 기쁨이 화사하게 만개하는 순간을 그려낸 작품입니다. 이 공간은 다채로운 꽃들이 피어난 라운지를 배경으로, 계절의 낭만과 자연의 생명력이 어우러진 마법 같은 풍경을 선사합니다.\n\n저마다의 생동감을 간직한 나비들은 꽃들이 만발한 라운지 곳곳을 자유롭게 넘나들다, 마침내 정교하고 아름다운 크리스마스트리의 형상을 완성하며 우리 곁에 행운처럼 찾아오는 크리스마스의 설렘을 은유합니다. 트리가 온전한 형태를 갖추는 바로 그 순간, 공간은 순식간에 눈부신 화이트 크리스마스의 장관으로 전환됩니다.\n\n꽃과 나비가 빚어낸 따뜻한 색채 위로 순백의 눈송이가 내려앉으며, 공간은 비로소 완성된 축제의 환희로 가득 차게 됩니다. \"Lucky Christmas Lounge\"는 꽃과 나비, 그리고 빛이 만들어내는 감각적인 변화를 통해 크리스마스의 화사한 시작과 절정을 보여줍니다. 특히, 화이트 크리스마스로 변하는 이 기적 같은 행운의 순간을 관객들에게 선물하며, 다채로운 꽃들 사이에서 트리가 완성되는 경이로움을 경험하게 합니다.",
     thumbnail: xmasFrames[0],
     thumbnails: xmasFrames,
     hero: `${XMAS_DIR}/2_page/optimized/hero.jpg`,
@@ -922,7 +917,11 @@ export const projects: Project[] = [
   {
     id: "dell-s-bg",
     title: "DELL S series BG",
-    description: TODO_DESCRIPTION,
+    client: "DELL",
+    date: "2023.09 – 2023.10",
+    contribution: "1인 · 스타일프레임 디자인",
+    description:
+      "Dell 모니터의 색감을 고급스럽게 표현할 수 있도록 부채꼴로 펼쳐진 리쿠알라 그란디스 식물로 배경화면 아트워크 작업을 진행하였습니다. 실제 식물의 디테일을 살리면서 고급스럽게 색감이 표현될 수 있도록 작업하였습니다.",
     thumbnail: dellFrames[0],
     thumbnails: dellFrames,
     hero: `${DELL_DIR}/2_page/optimized/hero.jpg`,
@@ -946,7 +945,11 @@ export const projects: Project[] = [
   {
     id: "lg-brand-expressions",
     title: "LG Brand Expressions",
-    description: TODO_DESCRIPTION,
+    client: "LG",
+    date: "2023.06 – 2023.08",
+    contribution: "4인 · 기획, 스타일프레임 디자인, 애니메틱",
+    description:
+      "LG 브랜드가 지닌 다양한 가치를 담아낸 브랜드 익스프레션 영상 시리즈입니다. 재활용, 친환경, 플렉서블 디스플레이, 즐거움, 확장성 등의 요소를 캐주얼하고 친근한 스타일로 풀어내어 브랜드가 대중에게 더욱 가깝게 다가갈수 있도록 작업했습니다.",
     thumbnail: lgFrames[0],
     thumbnails: lgFrames,
     hero: `${LG_DIR}/2_page/optimized/hero.jpg`,
@@ -962,7 +965,7 @@ export const projects: Project[] = [
     date: "2025.06 – 2025.07",
     contribution: "1인 · 전체 작업",
     description:
-      "IBK 홍보관 메인 영상으로, 은행이 지나온 시간을 한 편에 담아야 했습니다. 로고의 변천을 축으로 삼아, 시대마다 다른 공간과 재질 위에 로고를 놓으며 과거에서 미래까지를 하나의 흐름으로 이었습니다.",
+      "IBK 홍보관 메인 영상으로, 은행이 지나온 시간을 한 편에 담아야 했습니다. 로고의 변천을 축으로 삼아, 시대마다 다른 공간 속에서 다양한 재질로 로고를 표현하여 과거에서 미래까지를 하나의 흐름으로 이었습니다.",
     thumbnail: ibkFrames[0],
     thumbnails: ibkFrames,
     hero: `${IBK_DIR}/2_page/optimized/hero.jpg`,
@@ -978,7 +981,7 @@ export const projects: Project[] = [
     date: "2025.03 – 2025.04",
     contribution: "2인 · 기획, 스타일프레임 디자인, 애니메틱",
     description:
-      "브릿지 영상 특성상, 몇 초 안에 뷰티 채널임이 읽혀야 했습니다. 핑크 계열의 화사한 톤과 퍼프·리본 같은 부드러운 질감으로 화면을 채워 시선이 머물도록 구성했습니다.",
+      "GS 홈쇼핑의 뷰티 채널에 삽입되는 브릿지 영상을 작업하였습니다. 브릿지 영상의 특성상, 몇 초 안에 뷰티 채널임이 읽히고 채널의 가치가 빠르게 표현되어야 했습니다. 핑크 계열의 화사한 톤과 퍼프·리본 같은 부드러운 질감의 소재들 등의 페미닌한 요소들로 화면을 채워 소비자들이 채널을 인지하고 집중할 수 있도록 미감에 초점을 맞추어 디자인했습니다.",
     thumbnail: gsFrames[0],
     thumbnails: gsFrames,
     hero: `${GS_DIR}/2_page/optimized/1.jpg`,
@@ -1043,7 +1046,7 @@ export const projects: Project[] = [
     date: "2023.10 – 2024.01",
     contribution: "4인 · 스타일프레임 디자인, 애니메틱",
     description:
-      "갤럭시 안에 담기는 다양한 서비스와 기능을 반복해서 보게 되는 새티스파잉한 연출로 풀고, 끝과 시작이 이어지는 루핑 구조로 구성했습니다.",
+      "갤럭시 플립 7 안에 담기는 다양한 서비스와 기능을 반복해서 보게 되는 새티스파잉한 연출로 풀고, 끝과 시작이 이어지는 루핑 구조로 구성했습니다. 갤럭시 브랜드의 하이엔드 라인인 플립7 모델의 가치를 고급스럽게 전달하기 위하여 고급스러운 소재 및 형태감과 미감에 신경써서 작업하였습니다.",
     thumbnail: walletFrames[0],
     thumbnails: walletFrames,
     hero: `${WALLET_DIR}/2_page/optimized/hero.jpg`,
@@ -1074,7 +1077,7 @@ export const projects: Project[] = [
     date: "2025.04 – 2025.06",
     contribution: "4인 · 기획, 스타일프레임 디자인, 애니메틱",
     description:
-      "수술 도구를 소개하는 영상이라, 시술 장면이 주는 부담을 덜면서 기능은 정확히 전달해야 했습니다. 장기를 풍선 스타일로 표현하여 시술 과정을 보여주고, 도구의 작동 원리는 그대로 읽히도록 구성했습니다.",
+      "리브스메드의 새로운 수술 도구를 소개하는 영상을 시술 장면이 주는 부담을 덜면서 기능은 정확히 전달해야 했습니다. 장기를 풍선 스타일로 표현하여 시술 과정을 보여주고, 도구의 작동 원리는 그대로 읽히도록 구성했습니다. 의료 제품의 특성인 신뢰성을 강조하기 위해 절제된 디자인무드와 연출로 구성하였습니다.",
     thumbnail: livsmedFrames[0],
     thumbnails: livsmedFrames,
     hero: `${LIVSMED_DIR}/2_page/optimized/hero.jpg`,
@@ -1090,7 +1093,7 @@ export const projects: Project[] = [
     date: "2025.01 – 2025.04",
     contribution: "5인 · 기획, 스타일프레임 디자인, 애니메틱",
     description:
-      "송도·청라·영종 세 자유구역의 특성을 담아야 하는 아나몰픽 영상이었습니다. 미술관의 액자를 화면 장치로 삼아 구역마다 다른 장면을 담고, 액자 안쪽으로 공간이 파고드는 입체감을 살렸습니다.",
+      "송도·청라·영종 세 자유구역의 특성을 담아야 하는 아나몰픽 영상이었습니다. 미술관의 액자를 화면 장치로 삼아 구역마다 다른 장면을 담고, 액자 안쪽으로 공간을 구성하여 아나몰픽의 입체감과 재미를 살렸습니다. 세 자유구역의 특성을 교육, 과학, 항공, 무역, 테마파크 등으로 고급스럽게 표현하여 자유구역의 가치를 전달하고자 하였습니다.",
     thumbnail: ifezFrames[0],
     thumbnails: ifezFrames,
     hero: `${IFEZ_DIR}/2_page/optimized/hero.jpg`,

@@ -377,13 +377,13 @@ function NaturalGallery({ items }: { items: (GalleryImage | GalleryRow)[] }) {
 function toSegments(items: GalleryItem[]) {
   const segments: (
     | { kind: "images"; items: (GalleryImage | GalleryRow)[] }
-    | { kind: "text"; text: string }
+    | { kind: "text"; text: string; label?: string }
     | { kind: "video"; videos: { youtube: string; poster?: string }[] }
   )[] = [];
 
   for (const item of items) {
     if (isGalleryText(item)) {
-      segments.push({ kind: "text", text: item.text });
+      segments.push({ kind: "text", text: item.text, label: item.label });
       continue;
     }
     if (isGalleryVideo(item)) {
@@ -421,10 +421,13 @@ function Paragraph({
   text,
   first,
   chapter,
+  label,
 }: {
   text: string;
   first: boolean;
   chapter?: number;
+  /** 번호 대신 챕터 머리에 달 이름 (GalleryText.label) */
+  label?: string;
 }) {
   if (chapter === undefined) {
     return (
@@ -438,7 +441,7 @@ function Paragraph({
     <div className={`${PROSE_W} ${first ? "mt-[6vh]" : "mt-[12vh]"} mb-[6vh]`}>
       <div className="mb-5 flex items-center gap-4" aria-hidden>
         <span className="text-[11px] font-semibold tabular-nums tracking-[0.16em] text-ink/40">
-          {String(chapter).padStart(2, "0")}
+          {label ?? String(chapter).padStart(2, "0")}
         </span>
         <span className="h-px flex-1 bg-ink/10" />
       </div>
@@ -502,6 +505,7 @@ export default function ProjectGallery({
               text={seg.text}
               first={i === 0}
               chapter={chaptered ? ++chapter : undefined}
+              label={seg.label}
             />
           ) : seg.kind === "video" ? (
             <VideoRow key={i} videos={seg.videos} last={i === segments.length - 1} />

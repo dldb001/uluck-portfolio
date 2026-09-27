@@ -170,7 +170,14 @@ export default function WorkDetail({ params }: { params: { id: string } }) {
         (PROSE_W가 부모 폭 기준이라 컨테이너가 다르면 시작점이 어긋난다 — lib/styles.ts 참고)
       */}
       <section className={`mx-auto ${CONTENT_W} px-3 pt-[9vh] ${leadsWithText ? "" : "pb-[9vh]"}`}>
-        <p className={`${PROSE_W} ${PROSE_TEXT}`}>{project.description}</p>
+        {/* 빈 줄로 나눈 만큼 문단이 된다 — 문단 사이는 빈 줄 하나(1.9em, 줄 간격 한 줄)만큼 띄운다 */}
+        <div className={PROSE_W}>
+          {project.description.split(/\n\s*\n/).map((para, i) => (
+            <p key={i} className={`${PROSE_TEXT} ${i > 0 ? "mt-[1.9em]" : ""}`}>
+              {para}
+            </p>
+          ))}
+        </div>
       </section>
 
       {/* 4. 이미지 그리드 — 블록 크기를 섞어 강약을 준다 (ProjectGallery 참고) */}

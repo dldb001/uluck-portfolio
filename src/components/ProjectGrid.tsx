@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   animate,
   AnimatePresence,
@@ -75,7 +74,6 @@ const STAGGER = 0.05;
  * - 화면에 들어올 때 · 필터로 새 카드가 들어올 때 왼쪽부터 차례로 나타난다 (STAGGER)
  */
 export default function ProjectGrid({ projects, hoveredId = null, onCardHoverChange }: Props) {
-  const router = useRouter();
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -364,10 +362,12 @@ export default function ProjectGrid({ projects, hoveredId = null, onCardHoverCha
     animate(x, next, { type: "spring", stiffness: 260, damping: 34 });
   };
 
-  /** threshold 미만이면 클릭 → 상세 페이지로 이동, 이상이면 라우팅 취소 */
-  const handleActivate = (project: Project) => {
-    if (draggedRef.current) return;
-    router.push(project.href);
+  /**
+   * 카드 클릭 — threshold 이상 끌었다 놓은 것이면 이동을 막고, 아니면 링크 기본 동작에 맡긴다.
+   * (그냥 클릭은 Link가 같은 탭에서 이동, Ctrl/Shift+클릭은 브라우저가 새 탭·새 창으로 연다)
+   */
+  const handleActivate = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (draggedRef.current) e.preventDefault();
   };
 
   return (

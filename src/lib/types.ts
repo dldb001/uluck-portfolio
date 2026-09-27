@@ -34,6 +34,11 @@ export interface GalleryImage {
  */
 export interface GalleryText {
   text: string;
+  /**
+   * 챕터 머리 이름 — 문단이 둘 이상인 프로젝트에서 문단 위에 번호(01, 02 …) 대신 이 이름을 단다
+   * (KBS의 "뉴스라인" · "7시 뉴스" · "뉴스특보"처럼). 없으면 번호가 그대로 붙는다.
+   */
+  label?: string;
 }
 
 /**
@@ -116,7 +121,11 @@ export interface Project {
    * 없거나 1장 이하면 `thumbnail` 한 장으로 고정된다.
    */
   thumbnails?: string[];
-  /** 상세 페이지 소개 문단 */
+  /**
+   * 상세 페이지 소개 문단.
+   * 빈 줄("\n\n")로 나누면 그 자리에서 문단이 갈린다 (work/[id]/page.tsx 참고). 한 문단 안의 줄은
+   * 폭에 맞춰 자동으로 감기므로 줄바꿈을 직접 넣지 않는다.
+   */
   description: string;
   /** 상세 페이지 풀블리드 히어로 이미지 (없으면 thumbnail로 대체) */
   hero?: string;

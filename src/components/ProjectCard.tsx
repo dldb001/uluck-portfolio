@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import type { Project } from "@/lib/types";
 import { PILL, PILL_PX, PILL_TEXT } from "@/lib/styles";
@@ -38,8 +39,11 @@ type Props = {
   isHovered?: boolean;
   /** 다른 카드가 호버 중 */
   isDimmed?: boolean;
-  /** 드래그 여부 판단 후 라우팅 (5단계에서 그리드가 주입) */
-  onActivate?: (project: Project) => void;
+  /**
+   * 카드를 눌렀을 때 그리드가 끼어드는 자리 — 드래그 끝에 손을 뗀 것이면 여기서 e.preventDefault()로
+   * 이동을 막는다. 막지 않으면 링크(<a>)의 기본 동작 그대로 간다 (아래 Link 참고).
+   */
+  onActivate?: (e: MouseEvent<HTMLAnchorElement>) => void;
   /** 그리드가 화면에 들어와 카드들이 나타날 차례인지 — false인 동안은 숨어서 기다린다 */
   revealed?: boolean;
   /** 나타날 때 기다리는 시간(초) — 그리드가 순서대로 매겨 차례차례 올라오게 한다 */
@@ -130,18 +134,21 @@ export default function ProjectCard({
       data-card-id={project.id}
       className={`${CARD_WIDTH} shrink-0`}
     >
-      <div
-        role="link"
-        tabIndex={0}
+      {/*
+        실제 링크(<a href>)라 브라우저 기본 동작이 그대로 살아 있다 — Ctrl/⌘+클릭은 새 탭,
+        Shift+클릭은 새 창, 휠 클릭은 새 탭, 우클릭 메뉴의 "새 탭에서 열기"·"링크 주소 복사"도 된다.
+        그냥 클릭하면 Link가 가로채 페이지 새로고침 없이 이동한다 (수정 키가 눌려 있으면 Link는 손을 뗀다).
+        Enter도 링크 기본 동작이라 따로 키 처리를 두지 않는다.
+
+        draggable={false}: <a>는 기본으로 브라우저의 링크 드래그(끌어서 주소 옮기기)가 켜져 있어,
+        카드를 잡고 좌우로 끄는 순간 그쪽이 먼저 잡혀 트랙 드래그가 먹지 않는다.
+      */}
+      <Link
+        href={project.href}
+        draggable={false}
         aria-label={`${project.title} 상세 보기`}
-        onClick={() => onActivate?.(project)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onActivate?.(project);
-          }
-        }}
-        className={`relative ${CARD_ASPECT} ${scale} w-full cursor-pointer overflow-hidden rounded-[10px] bg-ink/5 transition-transform duration-[350ms] ease-out will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink`}
+        onClick={onActivate}
+        className={`relative block ${CARD_ASPECT} ${scale} w-full cursor-pointer overflow-hidden rounded-[10px] bg-ink/5 transition-transform duration-[350ms] ease-out will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink`}
       >
         {/* 프레임을 전부 겹쳐 두고 opacity로 전환한다 — src를 갈아끼우면 매번 새로 받느라
             첫 바퀴에서 빈 화면이 스친다. 겹쳐 두면 카드가 화면에 들어올 때 함께 로드된다
@@ -195,7 +202,7 @@ export default function ProjectCard({
         >
           {project.category.join(" · ")}
         </span>
-      </div>
+      </Link>
 
       {/* 캡션 높이는 CARD_WIDTH 계산에 상수로 들어가 있다 — 2rem(모바일) / 2.25rem(md).
           긴 제목이 카드 폭을 밀지 않도록 truncate로 한 줄 고정.
